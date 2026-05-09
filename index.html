@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shift Checklist — Airport Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOrN93HtjK8J8vYQaGeUWyFSEm5yFMjYA",
+    authDomain: "shift-checklist-300c6.firebaseapp.com",
+    projectId: "shift-checklist-300c6",
+    storageBucket: "shift-checklist-300c6.firebasestorage.app",
+    messagingSenderId: "1041331168689",
+    appId: "1:1041331168689:web:348a23e4fa74745b0b4990"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.db = db;
+  window.fsCollection = collection;
+  window.fsDoc = doc;
+  window.fsSetDoc = setDoc;
+  window.fsGetDoc = getDoc;
+  window.fsGetDocs = getDocs;
+  window.fsDeleteDoc = deleteDoc;
+  window.fsUpdateDoc = updateDoc;
+  window.fsAddDoc = addDoc;
+  window.fsQuery = query;
+  window.fsOrderBy = orderBy;
+
+  window.firebaseReady = true;
+  window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a24;
+  --bg4: #22222f;
+  --accent: #e8c547;
+  --accent2: #f0d060;
+  --text: #f0ede8;
+  --text2: #9b9890;
+  --text3: #5a5855;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --green: #4caf82;
+  --red: #e05555;
+  --amber: #e8a020;
+  --blue: #5588ee;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+/* PAGES */
+.page{display:none;min-height:100vh;animation:fadeIn 0.4s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,15,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text)}
+.nav-brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-link{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.2s;border:1px solid transparent}
+.nav-link:hover{color:var(--text);background:var(--bg3)}
+.nav-link.active{color:var(--accent);border-color:rgba(232,197,71,0.3);background:rgba(232,197,71,0.07)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-staff{font-size:12px;color:var(--text3);background:var(--bg3);padding:4px 12px;border-radius:20px;border:1px solid var(--border2)}
+
+/* LANDING */
+#page-landing{display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.landing-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(232,197,71,0.06) 0%,transparent 70%)}
+.landing-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 0%,transparent 100%)}
+.landing-content{position:relative;text-align:center;padding:2rem;max-width:480px;width:100%}
+.landing-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(232,197,71,0.1);border:1px solid rgba(232,197,71,0.25);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);font-weight:500;margin-bottom:2rem;letter-spacing:0.05em}
+.landing-title{font-family:'Syne',sans-serif;font-size:clamp(32px,6vw,52px);font-weight:700;line-height:1.1;margin-bottom:1rem}
+.landing-title span{color:var(--accent)}
+.landing-sub{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:2.5rem}
+.landing-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:2rem;text-align:left}
+.lc-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
+.lc-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 16px;font-size:15px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;margin-bottom:12px}
+.lc-input:focus{border-color:var(--accent)}
+.lc-input::placeholder{color:var(--text3)}
+.btn-primary{width:100%;background:var(--accent);color:#0a0a0f;border:none;border-radius:var(--radius-sm);padding:13px;font-size:14px;font-weight:600;font-family:'Syne',sans-serif;cursor:pointer;transition:all 0.2s;letter-spacing:0.03em}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.lc-error{font-size:12px;color:var(--red);margin-top:6px;display:none}
+
+/* CHECKLIST PAGE */
+#page-checklist{padding-top:60px}
+.checklist-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 60px)}
+.cl-sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:1.5rem 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.cl-sidebar-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:0 1.25rem;margin-bottom:1rem}
+.cl-nav-item{display:flex;align-items:center;gap:10px;padding:10px 1.25rem;cursor:pointer;transition:all 0.2s;border-left:2px solid transparent;font-size:13px;color:var(--text2)}
+.cl-nav-item:hover{color:var(--text);background:var(--bg3)}
+.cl-nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(232,197,71,0.05)}
+.cl-nav-item.done{color:var(--green);border-left-color:var(--green)}
+.cl-nav-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background 0.2s}
+.cl-nav-item.active .cl-nav-dot{background:var(--accent)}
+.cl-nav-item.done .cl-nav-dot{background:var(--green)}
+.cl-main{padding:2rem 2.5rem;max-width:860px}
+.cl-progress{background:var(--bg3);height:3px;position:sticky;top:60px;z-index:10}
+.cl-progress-fill{height:100%;background:var(--accent);transition:width 0.4s ease}
+
+/* SECTION */
+.section-wrap{display:none}
+.section-wrap.active{display:block;animation:fadeIn 0.3s ease}
+.section-header{margin-bottom:2rem}
+.section-num{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
+.section-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px}
+.section-sub{font-size:13px;color:var(--text2)}
+.grp{margin-bottom:2rem}
+.grp-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.field{margin-bottom:1.25rem}
+.field-label{font-size:13px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:5px;line-height:1.4}
+.req{color:var(--accent);font-size:11px}
+.field-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
+.field-input:focus{border-color:var(--accent)}
+.field-input::placeholder{color:var(--text3)}
+textarea.field-input{resize:vertical;min-height:80px;line-height:1.6}
+
+/* TOGGLE BUTTONS */
+.tog-group{display:flex;flex-wrap:wrap;gap:6px}
+.tog{padding:7px 16px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+.tog:hover{border-color:var(--border2);color:var(--text);background:var(--bg3)}
+.tog.sel-yes{background:rgba(76,175,130,0.15);border-color:rgba(76,175,130,0.4);color:var(--green)}
+.tog.sel-no{background:rgba(224,85,85,0.15);border-color:rgba(224,85,85,0.4);color:var(--red)}
+.tog.sel-blue{background:rgba(85,136,238,0.15);border-color:rgba(85,136,238,0.4);color:var(--blue)}
+.tog.sel-amber{background:rgba(232,160,32,0.15);border-color:rgba(232,160,32,0.4);color:var(--amber)}
+
+/* CHECKLIST ROWS */
+.chk-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.chk-row:last-child{border-bottom:none}
+.chk-text{font-size:13px;color:var(--text);flex:1;line-height:1.4}
+.chk-togs{display:flex;gap:5px;flex-shrink:0}
+
+/* GATE CARDS */
+.gate-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
+.gate-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem}
+.gate-card-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent);margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.mini-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px}
+.branch-box{background:rgba(232,160,32,0.07);border:1px solid rgba(232,160,32,0.2);border-radius:var(--radius-sm);padding:8px 10px;margin-top:10px}
+.branch-box-label{font-size:10px;color:var(--amber);font-weight:600;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em}
+.branch-hidden{font-size:11px;color:var(--text3);font-style:italic;margin-top:8px}
+
+/* STATUS BUTTONS */
+.status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+.stat-btn{padding:12px 8px;border:1px solid var(--border2);border-radius:var(--radius-sm);text-align:center;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);background:var(--bg3);transition:all 0.15s;line-height:1.3}
+.stat-btn:hover{border-color:var(--border2);color:var(--text)}
+.stat-btn.s-normal{background:rgba(76,175,130,0.12);border-color:rgba(76,175,130,0.35);color:var(--green)}
+.stat-btn.s-minor{background:rgba(232,160,32,0.12);border-color:rgba(232,160,32,0.35);color:var(--amber)}
+.stat-btn.s-major{background:rgba(224,85,85,0.12);border-color:rgba(224,85,85,0.35);color:var(--red)}
+.stat-btn.s-esc{background:rgba(85,136,238,0.12);border-color:rgba(85,136,238,0.35);color:var(--blue)}
+
+/* NAV FOOTER */
+.sec-footer{display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.btn-sec{padding:10px 20px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.btn-sec:hover{color:var(--text);background:var(--bg3)}
+.btn-next{padding:10px 24px;background:var(--accent);color:#0a0a0f;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Syne',sans-serif}
+.btn-next:hover{background:var(--accent2)}
+.pg-text{font-size:12px;color:var(--text3)}
+
+/* CONFIRM */
+.confirm-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;padding:2rem}
+.confirm-icon{width:64px;height:64px;border-radius:50%;background:rgba(76,175,130,0.15);border:1px solid rgba(76,175,130,0.3);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1.5rem}
+.confirm-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;margin-bottom:8px}
+.confirm-sub{font-size:14px;color:var(--text2);margin-bottom:2rem;line-height:1.6}
+.confirm-meta{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:1.25rem 1.5rem;text-align:left;width:100%;max-width:420px;margin-bottom:1.5rem}
+.meta-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.meta-row:last-child{border-bottom:none}
+.meta-key{color:var(--text2)}
+.meta-val{color:var(--text);font-weight:500}
+.confirm-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* PAST SHIFTS */
+#page-past{padding-top:80px}
+.page-container{max-width:1000px;margin:0 auto;padding:2rem}
+.page-header{margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text2)}
+.shifts-grid{display:grid;gap:10px}
+.shift-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;transition:border-color 0.2s;cursor:pointer}
+.shift-card:hover{border-color:var(--border2)}
+.shift-card-left{flex:1}
+.shift-card-date{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.shift-card-meta{font-size:12px;color:var(--text2)}
+.shift-badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:12px}
+.badge-normal{background:rgba(76,175,130,0.15);color:var(--green)}
+.badge-minor{background:rgba(232,160,32,0.15);color:var(--amber)}
+.badge-major{background:rgba(224,85,85,0.15);color:var(--red)}
+.badge-esc{background:rgba(85,136,238,0.15);color:var(--blue)}
+.shift-card-right{display:flex;align-items:center;gap:8px}
+.btn-dl{padding:6px 14px;background:var(--accent);color:#0a0a0f;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;transition:all 0.2s}
+.btn-dl:hover{background:var(--accent2)}
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:1rem}
+
+/* ADMIN */
+#page-admin{padding-top:80px}
+.admin-login{max-width:420px;margin:0 auto;padding:2rem}
+.admin-tabs{display:flex;gap:6px;margin-bottom:2rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px}
+.admin-tab{flex:1;padding:8px;text-align:center;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);transition:all 0.2s}
+.admin-tab.active{background:var(--accent);color:#0a0a0f}
+.admin-panel-wrap{display:none}
+.admin-panel-wrap.active{display:block}
+.admin-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem}
+.admin-section-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.staff-list{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.staff-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.staff-item-left{display:flex;flex-direction:column;gap:2px}
+.staff-item-name{font-size:13px;font-weight:500;color:var(--text)}
+.staff-item-meta{font-size:11px;color:var(--text3)}
+.staff-item-right{display:flex;gap:6px;align-items:center}
+.badge-admin{font-size:10px;padding:2px 7px;background:rgba(232,197,71,0.15);border:1px solid rgba(232,197,71,0.3);color:var(--accent);border-radius:8px;font-weight:600}
+.btn-sm{padding:5px 12px;font-size:11px;font-weight:500;border-radius:6px;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+.btn-danger{background:rgba(224,85,85,0.1);border:1px solid rgba(224,85,85,0.3);color:var(--red)}
+.btn-danger:hover{background:rgba(224,85,85,0.2)}
+.btn-info{background:rgba(85,136,238,0.1);border:1px solid rgba(85,136,238,0.3);color:var(--blue)}
+.btn-info:hover{background:rgba(85,136,238,0.2)}
+.btn-success{background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.3);color:var(--green)}
+.btn-success:hover{background:rgba(76,175,130,0.2)}
+.add-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.add-form-full{grid-column:1/-1}
+.q-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.q-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px}
+.q-item-sec{font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px}
+.q-item-text{font-size:13px;color:var(--text);margin-bottom:6px;line-height:1.4}
+.q-item-type{font-size:11px;color:var(--text3);margin-bottom:8px}
+.q-item-btns{display:flex;gap:6px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:1.25rem}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem}
+select.field-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a5855' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 18px;font-size:13px;color:var(--text);z-index:300;transform:translateY(80px);opacity:0;transition:all 0.3s;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.toast-success{border-color:rgba(76,175,130,0.4);background:rgba(76,175,130,0.1);color:var(--green)}
+.toast.toast-error{border-color:rgba(224,85,85,0.4);background:rgba(224,85,85,0.1);color:var(--red)}
+.loading{display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--text3);gap:10px}
+.spinner{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav" style="display:none">
+  <div class="nav-brand">
+    <div class="nav-brand-dot"></div>
+    Airport Ops
+  </div>
+  <div class="nav-links">
+    <div class="nav-link active" id="nav-checklist" onclick="showPage('checklist')">Checklist</div>
+    <div class="nav-link" id="nav-past" onclick="showPage('past')">Past Shifts</div>
+    <div class="nav-link" id="nav-admin" onclick="showPage('admin')">Admin</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-staff" id="nav-staff-badge"></div>
+    <button class="btn-sec" onclick="logout()" style="font-size:12px;padding:6px 12px">Sign out</button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- PAGE: LANDING -->
+<div class="page active" id="page-landing" style="display:flex">
+  <div class="landing-bg"></div>
+  <div class="landing-grid"></div>
+  <div class="landing-content">
+    <div class="landing-badge">✦ Airport Operations</div>
+    <h1 class="landing-title">Shift<br><span>Checklist</span></h1>
+    <p class="landing-sub">Enter your staff number to access your shift checklist. No password required.</p>
+    <div class="landing-card">
+      <div class="lc-label">Staff Number</div>
+      <input class="lc-input" id="staff-input" placeholder="e.g. DO-114" onkeydown="if(event.key==='Enter')enterSite()">
+      <div class="lc-error" id="staff-error">Staff number not recognised. Contact your admin.</div>
+      <button class="btn-primary" onclick="enterSite()">Access Checklist →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: CHECKLIST -->
+<div class="page" id="page-checklist">
+  <div class="cl-progress"><div class="cl-progress-fill" id="cl-prog" style="width:16.6%"></div></div>
+  <div class="checklist-layout">
+    <div class="cl-sidebar">
+      <div class="cl-sidebar-title">Sections</div>
+      <div id="cl-nav"></div>
+    </div>
+    <div class="cl-main" id="cl-main"></div>
+  </div>
+</div>
+
+<!-- PAGE: PAST SHIFTS -->
+<div class="page" id="page-past">
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-title">Past Shifts</div>
+      <div class="page-sub">All submitted shift reports. Click download to save as PDF.</div>
+    </div>
+    <div id="past-list"><div class="loading"><div class="spinner"></div> Loading shifts...</div></div>
+  </div>
+</div>
+
+<!-- PAGE: ADMIN -->
+<div class="page" id="page-admin">
+  <div class="page-container">
+    <div class="page-header">
+      <div class="page-title">Admin Panel</div>
+      <div class="page-sub">Manage staff, questions and access levels.</div>
+    </div>
+    <!-- Admin login -->
+    <div id="admin-login-wrap" style="max-width:420px">
+      <div class="admin-section">
+        <div class="admin-section-title">Admin Login</div>
+        <div class="field">
+          <div class="field-label">Staff Number</div>
+          <input class="field-input" id="admin-staff-input" placeholder="e.g. DO-001">
+        </div>
+        <div class="field">
+          <div class="field-label">Password</div>
+          <input class="field-input" type="password" id="admin-pass-input" placeholder="Admin password" onkeydown="if(event.key==='Enter')adminLogin()">
+        </div>
+        <button class="btn-next" style="width:100%;margin-top:4px" onclick="adminLogin()">Login to Admin</button>
+      </div>
+    </div>
+    <!-- Admin panel -->
+    <div id="admin-panel-wrap" style="display:none">
+      <div class="admin-tabs">
+        <div class="admin-tab active" onclick="switchAdminTab('staff',this)">Staff</div>
+        <div class="admin-tab" onclick="switchAdminTab('questions',this)">Questions</div>
+        <div class="admin-tab" onclick="switchAdminTab('submissions',this)">Submissions</div>
+      </div>
+      <div id="admin-tab-staff" class="admin-panel-wrap active"></div>
+      <div id="admin-tab-questions" class="admin-panel-wrap"></div>
+      <div id="admin-tab-submissions" class="admin-panel-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentUser = null;
+let currentSection = 0;
+let formAnswers = {};
+let isAdmin = false;
+let allQuestions = [];
+let allStaff = [];
+
+const SECTIONS = [
+  {id:'s1', label:'DO Details'},
+  {id:'s2', label:'Ops Management'},
+  {id:'s3', label:'Gate Screening'},
+  {id:'s4', label:'Ops Reporting'},
+  {id:'s5', label:'SAS Checks'},
+  {id:'s6', label:'Shift Closure'}
+];
+
+const DEFAULT_QUESTIONS = [
+  {id:'q1',section:'DO Details',label:'Date',type:'date',required:true},
+  {id:'q2',section:'DO Details',label:'Shift',type:'choice',options:['Morning (06:00–14:00)','Afternoon (14:00–22:00)','Night (22:00–06:00)'],required:true},
+  {id:'q3',section:'DO Details',label:'Time of checks performed (HHMM)',type:'text',required:true},
+  {id:'q4',section:'DO Details',label:'Duty Officer name & staff number',type:'text',required:true},
+  {id:'q5',section:'Ops Management',label:'Were key stakeholders (SAS ADM, Cargo Ops, etc.) contacted and aligned?',type:'yesno',required:true},
+  {id:'q6',section:'Ops Management',label:'Was police present outside departure terminal to manage vehicle flow?',type:'yesno',required:true},
+  {id:'q7',section:'Ops Management',label:'Was an Arrival Car Park Diversion required?',type:'yesno',required:true},
+  {id:'q8',section:'Ops Management',label:'Was Departure PAX flow (Xovis) within acceptable wait time — no congestion observed?',type:'yesno',required:true},
+  {id:'q9',section:'Ops Management',label:'Were Drop-off Kerb resources sufficient?',type:'choice',options:['Sufficient','Borderline','Insufficient'],required:true},
+  {id:'q10',section:'Gate Screening',label:'Police at 75% staffing (MOU Section 7)?',type:'yesno',required:true},
+  {id:'q11',section:'Gate Screening',label:'Police at 100% during peak (MOU Section 7)?',type:'yesno',required:true},
+  {id:'q12',section:'Gate Screening',label:'G6–26: X-rays active',type:'choice',options:['1','2','3','4','5'],required:true},
+  {id:'q13',section:'Gate Screening',label:'G6–26: Queue size (Xovis)',type:'choice',options:['≤25','26–50','51–75','76–100','101+','Not active'],required:true},
+  {id:'q14',section:'Gate Screening',label:'G6–26: Reason if below capacity',type:'choice',options:['None — all operated','Police shortage','D-60 refusal','No female officer','Police on break','SAS Gate Leaders absent','Al Jaber shortage','Other'],required:false},
+  {id:'q15',section:'Gate Screening',label:'G1–3: X-rays active',type:'choice',options:['1','2','3','4','5'],required:true},
+  {id:'q16',section:'Gate Screening',label:'G1–3: Queue size (Xovis)',type:'choice',options:['≤25','26–50','51–75','76–100','101+','Not active'],required:true},
+  {id:'q17',section:'Gate Screening',label:'G1–3: Reason if below capacity',type:'choice',options:['None — all operated','Police shortage','D-60 refusal','No female officer','Police on break','SAS Gate Leaders absent','Al Jaber shortage','Other'],required:false},
+  {id:'q18',section:'Gate Screening',label:'G4&5: X-rays active',type:'choice',options:['1','2'],required:true},
+  {id:'q19',section:'Gate Screening',label:'G4&5: Queue size (Xovis)',type:'choice',options:['≤25','26–50','51–75','76–100','Not active'],required:true},
+  {id:'q20',section:'Gate Screening',label:'G4&5: Reason if below capacity',type:'choice',options:['None — all operated','Police shortage','D-60 refusal','No female officer','Police on break','SAS Gate Leaders absent','Al Jaber shortage','Other'],required:false},
+  {id:'q21',section:'Ops Reporting',label:'Are immigration counters and Smart Gates functioning normally?',type:'yesno',required:true},
+  {id:'q22',section:'Ops Reporting',label:'All critical systems (FIDS, X-ray, SG, AC, lighting) operational?',type:'yesno',required:true},
+  {id:'q23',section:'Ops Reporting',label:'Baggage belts operating without disruption?',type:'yesno',required:true},
+  {id:'q24',section:'Ops Reporting',label:'SAS Porters available for MAAS and baggage belt management?',type:'yesno',required:true},
+  {id:'q25',section:'Ops Reporting',label:'Arrival Baggage Belts staffed by Customs',type:'choice',options:['4 belts (peak)','5 belts (peak)','6 belts (peak)'],required:true},
+  {id:'q26',section:'Ops Reporting',label:'Ramp and cargo operations confirmed stable?',type:'choice',options:['Stable — monitored','Issues observed','Confirmed remotely only'],required:true},
+  {id:'q27',section:'Ops Reporting',label:'Contractor compliance checks — no major non-conformities?',type:'yesno',required:true},
+  {id:'q28',section:'Ops Reporting',label:'Stakeholder meetings attended by Duty Officer?',type:'yesno',required:true},
+  {id:'q29',section:'Ops Reporting',label:'Any airport disruption or systems failures?',type:'yesno',required:true},
+  {id:'q30',section:'Ops Reporting',label:'Any emergency situations during the shift?',type:'yesno',required:true},
+  {id:'q31',section:'Ops Reporting',label:'Escalation to management required?',type:'yesno',required:true},
+  {id:'q32',section:'SAS Checks',label:'BCT/BTR SAS bag handling monitoring report completed?',type:'yesno',required:false},
+  {id:'q33',section:'SAS Checks',label:'SAS Ops Baggage Tracking monitoring report completed?',type:'yesno',required:false},
+  {id:'q34',section:'SAS Checks',label:'SAS / Departure PAX Bus Transport report completed?',type:'yesno',required:true},
+  {id:'q35',section:'SAS Checks',label:'Zamzam Water Containers monitoring report completed?',type:'yesno',required:true},
+  {id:'q36',section:'Shift Closure',label:'Overall Shift Status',type:'status',options:['Normal Operations','Minor Issues','Major Disruption','Escalated'],required:true},
+  {id:'q37',section:'Shift Closure',label:'End of Shift Operational Summary',type:'textarea',required:true},
+  {id:'q38',section:'Shift Closure',label:'Additional Points requiring follow-up',type:'textarea',required:false}
+];
+
+// ─── FIREBASE HELPERS ────────────────────────────────────────────────────────
+function waitForFirebase(cb){
+  if(window.firebaseReady) cb();
+  else window.addEventListener('firebaseReady', cb);
+}
+
+async function dbGet(col, id){
+  const ref = window.fsDoc(window.db, col, id);
+  const snap = await window.fsGetDoc(ref);
+  return snap.exists() ? snap.data() : null;
+}
+async function dbSet(col, id, data){
+  await window.fsSetDoc(window.fsDoc(window.db, col, id), data);
+}
+async function dbAdd(col, data){
+  return await window.fsAddDoc(window.fsCollection(window.db, col), data);
+}
+async function dbDel(col, id){
+  await window.fsDeleteDoc(window.fsDoc(window.db, col, id));
+}
+async function dbUpdate(col, id, data){
+  await window.fsUpdateDoc(window.fsDoc(window.db, col, id), data);
+}
+async function dbAll(col){
+  const snap = await window.fsGetDocs(window.fsCollection(window.db, col));
+  return snap.docs.map(d=>({id:d.id,...d.data()}));
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+waitForFirebase(async ()=>{
+  await seedDefaults();
+  // Auto-login if session stored
+  const saved = sessionStorage.getItem('shiftUser');
+  if(saved){
+    const u = JSON.parse(saved);
+    currentUser = u;
+    isAdmin = u.isAdmin||false;
+    afterLogin();
+  }
+});
+
+async function seedDefaults(){
+  // Seed default admin if none exist
+  const existing = await dbGet('staff','DO-001');
+  if(!existing){
+    await dbSet('staff','DO-001',{name:'Super Admin',staffId:'DO-001',isAdmin:true,password:'admin123',createdAt:new Date().toISOString()});
+  }
+  // Seed questions if none
+  const qs = await dbAll('questions');
+  if(qs.length===0){
+    for(const q of DEFAULT_QUESTIONS){
+      await dbSet('questions',q.id,q);
+    }
+  }
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+async function enterSite(){
+  const val = document.getElementById('staff-input').value.trim().toUpperCase();
+  if(!val){showError('staff-error','Please enter your staff number.');return;}
+  const errEl = document.getElementById('staff-error');
+  errEl.style.display='none';
+  const staff = await dbGet('staff', val);
+  if(!staff){errEl.style.display='block';return;}
+  currentUser = staff;
+  isAdmin = staff.isAdmin||false;
+  sessionStorage.setItem('shiftUser', JSON.stringify(staff));
+  afterLogin();
+}
+
+function showError(id,msg){
+  const el=document.getElementById(id);
+  el.textContent=msg;el.style.display='block';
+}
+
+function afterLogin(){
+  document.getElementById('main-nav').style.display='flex';
+  document.getElementById('nav-staff-badge').textContent = currentUser.staffId+' — '+currentUser.name;
+  showPage('checklist');
+  initChecklist();
+}
+
+function logout(){
+  sessionStorage.removeItem('shiftUser');
+  currentUser=null;isAdmin=false;currentSection=0;formAnswers={};
+  document.getElementById('main-nav').style.display='none';
+  showPage('landing');
+  document.getElementById('staff-input').value='';
+  document.getElementById('staff-error').style.display='none';
+}
+
+// ─── PAGES ────────────────────────────────────────────────────────────────────
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const navEl = document.getElementById('nav-'+name);
+  if(navEl) navEl.classList.add('active');
+  if(name==='past') loadPastShifts();
+  if(name==='admin'){adminLoggedIn?renderAdminPanel():null;}
+}
+
+// ─── CHECKLIST ────────────────────────────────────────────────────────────────
+async function initChecklist(){
+  allQuestions = await dbAll('questions');
+  allQuestions.sort((a,b)=>parseInt(a.id.replace('q',''))-parseInt(b.id.replace('q','')));
+  currentSection=0;formAnswers={};
+  renderChecklistNav();
+  renderSection(0);
+}
+
+function renderChecklistNav(){
+  const nav = document.getElementById('cl-nav');
+  nav.innerHTML = SECTIONS.map((s,i)=>`
+    <div class="cl-nav-item ${i===0?'active':''}" id="clnav-${i}" onclick="goSection(${i})">
+      <div class="cl-nav-dot"></div>${i+1} · ${s.label}
+    </div>`).join('');
+}
+
+function renderSection(idx){
+  currentSection = idx;
+  const prog = ((idx+1)/SECTIONS.length*100).toFixed(0);
+  document.getElementById('cl-prog').style.width = prog+'%';
+  document.querySelectorAll('.cl-nav-item').forEach((el,i)=>{
+    el.classList.remove('active','done');
+    if(i<idx) el.classList.add('done');
+    else if(i===idx) el.classList.add('active');
+  });
+  const sLabel = SECTIONS[idx].label;
+  const sQuestions = allQuestions.filter(q=>q.section===sLabel);
+  const main = document.getElementById('cl-main');
+
+  if(idx===SECTIONS.length){
+    renderConfirm();return;
+  }
+
+  // Special gate screening layout
+  if(sLabel==='Gate Screening'){
+    main.innerHTML = renderGateSection(sQuestions, idx);
+  } else {
+    main.innerHTML = `
+      <div class="section-wrap active" id="sec-wrap-${idx}">
+        <div class="section-header">
+          <div class="section-num">Section ${idx+1} of ${SECTIONS.length}</div>
+          <div class="section-title">${sLabel}</div>
+        </div>
+        ${sQuestions.map(q=>renderQuestion(q)).join('')}
+        ${renderSecFooter(idx)}
+      </div>`;
+  }
+  restoreAnswers(sQuestions);
+  window.scrollTo(0,0);
+}
+
+function renderQuestion(q){
+  const val = formAnswers[q.id]||'';
+  if(q.type==='date') return `<div class="field"><div class="field-label">${q.label}${q.required?'<span class="req">*</span>':''}</div><input class="field-input" type="date" id="fq-${q.id}" value="${val||new Date().toISOString().split('T')[0]}" onchange="saveAnswer('${q.id}',this.value)"></div>`;
+  if(q.type==='text') return `<div class="field"><div class="field-label">${q.label}${q.required?'<span class="req">*</span>':''}</div><input class="field-input" id="fq-${q.id}" placeholder="Enter answer" value="${val}" onchange="saveAnswer('${q.id}',this.value)"></div>`;
+  if(q.type==='textarea') return `<div class="field"><div class="field-label">${q.label}${q.required?'<span class="req">*</span>':''}</div><textarea class="field-input" id="fq-${q.id}" placeholder="Enter details..." onchange="saveAnswer('${q.id}',this.value)">${val}</textarea></div>`;
+  if(q.type==='yesno') return `<div class="chk-row"><div class="chk-text">${q.label}${q.required?'<span class="req" style="margin-left:4px">*</span>':''}</div><div class="chk-togs"><span class="tog ${val==='Yes'?'sel-yes':''}" onclick="togYN(this,'${q.id}','Yes')">Yes</span><span class="tog ${val==='No'?'sel-no':''}" onclick="togYN(this,'${q.id}','No')">No</span></div></div>`;
+  if(q.type==='choice') return `<div class="field"><div class="field-label">${q.label}${q.required?'<span class="req">*</span>':''}</div><div class="tog-group">${(q.options||[]).map(o=>`<span class="tog ${val===o?'sel-blue':''}" onclick="togChoice(this,'${q.id}','${o}')">${o}</span>`).join('')}</div></div>`;
+  if(q.type==='status') return `<div class="field"><div class="field-label">${q.label}${q.required?'<span class="req">*</span>':''}</div><div class="status-grid">${(q.options||[]).map((o,i)=>{const cls=['s-normal','s-minor','s-major','s-esc'][i]||'';return`<div class="stat-btn ${val===o?cls:''}" onclick="togStatus(this,'${q.id}','${o}','${cls}')">${o}</div>`}).join('')}</div></div>`;
+  return '';
+}
+
+function renderGateSection(qs, idx){
+  const gates = [
+    {name:'G6–26', xrayQ:'q12', queueQ:'q13', reasonQ:'q14'},
+    {name:'G1–3',  xrayQ:'q15', queueQ:'q16', reasonQ:'q17'},
+    {name:'G4&5',  xrayQ:'q18', queueQ:'q19', reasonQ:'q20'}
+  ];
+  const complianceQs = qs.filter(q=>q.id==='q10'||q.id==='q11');
+  return `
+    <div class="section-wrap active" id="sec-wrap-${idx}">
+      <div class="section-header">
+        <div class="section-num">Section ${idx+1} of ${SECTIONS.length}</div>
+        <div class="section-title">Gate Screening</div>
+        <div class="section-sub">MOU compliance and per-gate status</div>
+      </div>
+      <div class="grp">
+        <div class="grp-label">MOU Staffing Compliance</div>
+        ${complianceQs.map(q=>renderQuestion(q)).join('')}
+      </div>
+      <div class="grp">
+        <div class="grp-label">X-ray Utilisation & Queue — All Gates</div>
+        <div class="gate-grid">
+          ${gates.map(g=>{
+            const xQ=qs.find(q=>q.id===g.xrayQ)||{options:[]};
+            const qQ=qs.find(q=>q.id===g.queueQ)||{options:[]};
+            const rQ=qs.find(q=>q.id===g.reasonQ)||{options:[]};
+            return `<div class="gate-card">
+              <div class="gate-card-name">${g.name}</div>
+              <div class="mini-label">X-rays active</div>
+              <div class="tog-group" style="margin-bottom:10px">${(xQ.options||[]).map(o=>`<span class="tog ${formAnswers[g.xrayQ]===o?'sel-blue':''}" onclick="togChoice(this,'${g.xrayQ}','${o}')">${o}</span>`).join('')}</div>
+              <div class="mini-label">Queue size (Xovis)</div>
+              <div class="tog-group" style="margin-bottom:8px">${(qQ.options||[]).map(o=>`<span class="tog ${formAnswers[g.queueQ]===o?'sel-blue':''}" onclick="togChoice(this,'${g.queueQ}','${o}')">${o}</span>`).join('')}</div>
+              <div class="branch-box">
+                <div class="branch-box-label">Reason if below capacity</div>
+                <div class="tog-group">${(rQ.options||[]).map(o=>`<span class="tog ${formAnswers[g.reasonQ]===o?'sel-amber':''}" onclick="togChoice(this,'${g.reasonQ}','${o}')" style="font-size:11px">${o}</span>`).join('')}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      ${renderSecFooter(idx)}
+    </div>`;
+}
+
+function renderSecFooter(idx){
+  const isLast = idx===SECTIONS.length-1;
+  return `<div class="sec-footer">
+    ${idx>0?`<button class="btn-sec" onclick="renderSection(${idx-1})">← Back</button>`:'<div></div>'}
+    <span class="pg-text">Section ${idx+1} of ${SECTIONS.length}</span>
+    <button class="btn-next" onclick="${isLast?'submitChecklist()':'renderSection('+(idx+1)+')'}">${isLast?'Submit Shift ✓':'Next Section →'}</button>
+  </div>`;
+}
+
+function restoreAnswers(qs){
+  qs.forEach(q=>{
+    const val = formAnswers[q.id];
+    if(!val) return;
+    const el = document.getElementById('fq-'+q.id);
+    if(el) el.value=val;
+  });
+}
+
+function goSection(idx){ renderSection(idx); }
+function saveAnswer(id,val){ formAnswers[id]=val; }
+function togYN(el,id,val){
+  formAnswers[id]=val;
+  const row=el.parentElement;
+  row.querySelectorAll('.tog').forEach(t=>{t.classList.remove('sel-yes','sel-no')});
+  el.classList.add(val==='Yes'?'sel-yes':'sel-no');
+}
+function togChoice(el,id,val){
+  formAnswers[id]=val;
+  const row=el.parentElement;
+  row.querySelectorAll('.tog').forEach(t=>{t.classList.remove('sel-blue','sel-amber')});
+  el.classList.add('sel-blue');
+}
+function togStatus(el,id,val,cls){
+  formAnswers[id]=val;
+  const row=el.parentElement;
+  row.querySelectorAll('.stat-btn').forEach(t=>{t.classList.remove('s-normal','s-minor','s-major','s-esc')});
+  el.classList.add(cls);
+}
+
+// ─── SUBMIT ──────────────────────────────────────────────────────────────────
+async function submitChecklist(){
+  const summary = formAnswers['q37']||'';
+  if(!summary){showToast('Please complete the End of Shift Summary.','error');return;}
+  const submission = {
+    staffId: currentUser.staffId,
+    staffName: currentUser.name,
+    submittedAt: new Date().toISOString(),
+    answers: formAnswers,
+    overallStatus: formAnswers['q36']||'Normal Operations'
+  };
+  try {
+    const ref = await dbAdd('submissions', submission);
+    renderConfirm(ref.id, submission);
+    generatePDF(submission);
+    showToast('Shift submitted and PDF downloaded!','success');
+  } catch(e){
+    showToast('Error saving. Please try again.','error');
+  }
+}
+
+function renderConfirm(refId, sub){
+  const main = document.getElementById('cl-main');
+  const d = sub||{};
+  const date = d.submittedAt?new Date(d.submittedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  const status = d.overallStatus||'—';
+  const statusColor = {'Normal Operations':'var(--green)','Minor Issues':'var(--amber)','Major Disruption':'var(--red)','Escalated':'var(--blue)'}[status]||'var(--text)';
+  main.innerHTML = `
+    <div class="confirm-wrap">
+      <div class="confirm-icon">✓</div>
+      <div class="confirm-title">Shift Submitted</div>
+      <div class="confirm-sub">Your shift report has been saved and your PDF is downloading.</div>
+      <div class="confirm-meta">
+        <div class="meta-row"><span class="meta-key">Officer</span><span class="meta-val">${d.staffName||''} — ${d.staffId||''}</span></div>
+        <div class="meta-row"><span class="meta-key">Submitted</span><span class="meta-val">${date}</span></div>
+        <div class="meta-row"><span class="meta-key">Status</span><span class="meta-val" style="color:${statusColor}">${status}</span></div>
+        <div class="meta-row"><span class="meta-key">Saved to</span><span class="meta-val">Firebase — Cloud</span></div>
+      </div>
+      <div class="confirm-btns">
+        <button class="btn-sec" onclick="initChecklist()">New Shift Report</button>
+        <button class="btn-next" onclick="showPage('past')">View Past Shifts</button>
+      </div>
+    </div>`;
+  document.querySelectorAll('.cl-nav-item').forEach(el=>el.classList.add('done'));
+  document.getElementById('cl-prog').style.width='100%';
+}
+
+// ─── PDF ─────────────────────────────────────────────────────────────────────
+function sanitizeText(str){
+  // Replace special unicode characters jsPDF can't render natively
+  return String(str||'')
+    .replace(/\u2264/g,'<=')   // ≤
+    .replace(/\u2265/g,'>=')   // ≥
+    .replace(/\u2013/g,'-')    // en dash
+    .replace(/\u2014/g,'--')   // em dash
+    .replace(/\u2019/g,"'")    // right single quote
+    .replace(/\u2018/g,"'")    // left single quote
+    .replace(/\u201C/g,'"')    // left double quote
+    .replace(/\u201D/g,'"')    // right double quote
+    .replace(/\u00B0/g,' deg') // degree
+    .replace(/[^\x00-\x7E]/g, '?'); // fallback for any other non-ASCII
+}
+
+function generatePDF(sub){
+  const {jsPDF} = window.jspdf;
+  const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210, M=14, cW=W-M*2;
+  let y=0;
+
+  // ── HEADER ────────────────────────────────────────────────────────
+  pdf.setFillColor(10,10,18);
+  pdf.rect(0,0,W,32,'F');
+
+  // Gold accent bar left edge
+  pdf.setFillColor(232,197,71);
+  pdf.rect(0,0,4,32,'F');
+
+  pdf.setTextColor(232,197,71);
+  pdf.setFontSize(15);pdf.setFont('helvetica','bold');
+  pdf.text('SHIFT CHECKLIST REPORT',M+4,13);
+
+  pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(140,136,128);
+  pdf.text('Airport Operations  |  Confidential',M+4,21);
+
+  const d = new Date(sub.submittedAt);
+  const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const timeStr = d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  pdf.setTextColor(200,196,188);pdf.setFontSize(8);
+  pdf.text(dateStr+' at '+timeStr, W-M, 21, {align:'right'});
+  y = 38;
+
+  // ── STATUS BANNER ─────────────────────────────────────────────────
+  const statusColors={
+    'Normal Operations':[56,161,105],
+    'Minor Issues':[214,158,46],
+    'Major Disruption':[220,53,69],
+    'Escalated':[66,153,225]
+  };
+  const statusLabels={
+    'Normal Operations':'NORMAL OPERATIONS',
+    'Minor Issues':'MINOR ISSUES',
+    'Major Disruption':'MAJOR DISRUPTION',
+    'Escalated':'ESCALATED'
+  };
+  const sc = statusColors[sub.overallStatus]||[56,161,105];
+  pdf.setFillColor(...sc);
+  pdf.roundedRect(M,y,cW,9,1,1,'F');
+  pdf.setTextColor(255,255,255);pdf.setFontSize(8);pdf.setFont('helvetica','bold');
+  const statusLabel = 'OVERALL STATUS: '+(statusLabels[sub.overallStatus]||'NORMAL OPERATIONS');
+  pdf.text(statusLabel, W/2, y+6, {align:'center'});
+  y += 15;
+
+  // ── OFFICER INFO BOX ──────────────────────────────────────────────
+  pdf.setFillColor(22,22,32);
+  pdf.roundedRect(M,y,cW,18,1,1,'F');
+  pdf.setDrawColor(40,40,55);
+  pdf.roundedRect(M,y,cW,18,1,1,'S');
+
+  // Three columns inside box
+  const col1=M+4, col2=M+62, col3=M+118;
+  pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(120,116,108);
+  pdf.text('DUTY OFFICER',col1,y+5.5);
+  pdf.text('STAFF ID',col2,y+5.5);
+  pdf.text('SHIFT',col3,y+5.5);
+
+  pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(240,237,232);
+  pdf.text(sanitizeText(sub.staffName||'—'),col1,y+13);
+  pdf.text(sanitizeText(sub.staffId||'—'),col2,y+13);
+  pdf.text(sanitizeText(sub.answers?.q2||'—'),col3,y+13);
+
+  // Vertical dividers
+  pdf.setDrawColor(40,40,55);
+  pdf.line(M+58,y+3,M+58,y+15);
+  pdf.line(M+114,y+3,M+114,y+15);
+  y += 24;
+
+  // ── ANSWERS BY SECTION ────────────────────────────────────────────
+  const ans = sub.answers||{};
+
+  // Skip DO Details questions that are already shown in the header box
+  const headerQIds = new Set(['q1','q2','q3','q4']);
+
+  // Group questions by section, preserving order
+  const sections = [];
+  const secMap = {};
+  const sortedQs = [...allQuestions].sort((a,b)=>{
+    const ai=parseInt((a.id||'').replace('q',''))||0;
+    const bi=parseInt((b.id||'').replace('q',''))||0;
+    return ai-bi;
+  });
+
+  sortedQs.forEach(q=>{
+    if(!secMap[q.section]){
+      secMap[q.section]={label:q.section,questions:[]};
+      sections.push(secMap[q.section]);
+    }
+    secMap[q.section].questions.push(q);
+  });
+
+  sections.forEach(sec=>{
+    // Collect answered questions in this section (skip header ones)
+    const answered = sec.questions.filter(q=>ans[q.id]&&!headerQIds.has(q.id));
+    if(!answered.length) return;
+
+    // Section header
+    if(y>255){pdf.addPage();y=M;}
+    pdf.setFillColor(30,30,42);
+    pdf.rect(M,y,cW,7,'F');
+    pdf.setFillColor(232,197,71);
+    pdf.rect(M,y,3,7,'F');
+    pdf.setTextColor(232,197,71);pdf.setFontSize(7.5);pdf.setFont('helvetica','bold');
+    pdf.text(sanitizeText(sec.label.toUpperCase()),M+6,y+5);
+    y+=11;
+
+    // Questions in this section
+    answered.forEach((q,qi)=>{
+      const rawVal = ans[q.id]||'';
+      const val = sanitizeText(rawVal);
+      const label = sanitizeText(q.label);
+
+      if(y>268){pdf.addPage();y=M;}
+
+      // Alternate row background
+      if(qi%2===0){
+        pdf.setFillColor(18,18,26);
+        pdf.rect(M,y-0.5,cW,7.5,'F');
+      }
+
+      // Label — left side, grey, wraps if needed
+      pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.setTextColor(140,136,128);
+      const maxLabelW = cW*0.68;
+      const labelLines = pdf.splitTextToSize(label, maxLabelW);
+      pdf.text(labelLines,M+3,y+4);
+
+      // Value — right side, white/coloured, bold
+      const valColor = {
+        'Yes':[76,175,130],
+        'No':[220,80,80],
+        'Normal Operations':[76,175,130],
+        'Minor Issues':[214,158,46],
+        'Major Disruption':[220,80,80],
+        'Escalated':[100,160,230],
+        'Stable — monitored':[76,175,130],
+        'Issues observed':[220,80,80],
+        'Sufficient':[76,175,130],
+        'Insufficient':[220,80,80],
+        'Borderline':[214,158,46]
+      }[rawVal];
+
+      if(valColor){
+        pdf.setTextColor(...valColor);
+      } else {
+        pdf.setTextColor(220,216,210);
+      }
+      pdf.setFontSize(8);pdf.setFont('helvetica','bold');
+
+      // Truncate long values to fit
+      const maxValW = cW*0.3;
+      const valLines = pdf.splitTextToSize(val, maxValW);
+      pdf.text(valLines, M+cW-2, y+4, {align:'right'});
+
+      const rowH = Math.max(labelLines.length, valLines.length)*4+5;
+      y += rowH;
+
+      // Thin divider
+      pdf.setDrawColor(28,28,40);pdf.setLineWidth(0.2);
+      pdf.line(M,y-1,M+cW,y-1);
+    });
+
+    y+=4; // spacing after section
+  });
+
+  // ── SUMMARY BOXES ─────────────────────────────────────────────────
+  const summary = sanitizeText(ans.q37||'');
+  const followup = sanitizeText(ans.q38||'');
+
+  if(summary){
+    if(y>240){pdf.addPage();y=M;}
+    pdf.setFillColor(30,30,42);
+    pdf.rect(M,y,cW,7,'F');
+    pdf.setFillColor(232,197,71);
+    pdf.rect(M,y,3,7,'F');
+    pdf.setTextColor(232,197,71);pdf.setFontSize(7.5);pdf.setFont('helvetica','bold');
+    pdf.text('END OF SHIFT OPERATIONAL SUMMARY',M+6,y+5);
+    y+=9;
+    pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(210,206,200);
+    const sumLines = pdf.splitTextToSize(summary,cW-6);
+    const sumH = sumLines.length*5+8;
+    pdf.setFillColor(18,18,26);
+    pdf.rect(M,y,cW,sumH,'F');
+    pdf.text(sumLines,M+4,y+6);
+    y+=sumH+6;
+  }
+
+  if(followup){
+    if(y>240){pdf.addPage();y=M;}
+    pdf.setFillColor(30,30,42);
+    pdf.rect(M,y,cW,7,'F');
+    pdf.setFillColor(214,158,46);
+    pdf.rect(M,y,3,7,'F');
+    pdf.setTextColor(214,158,46);pdf.setFontSize(7.5);pdf.setFont('helvetica','bold');
+    pdf.text('ADDITIONAL POINTS / FOLLOW-UP',M+6,y+5);
+    y+=9;
+    pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(210,206,200);
+    const fuLines = pdf.splitTextToSize(followup,cW-6);
+    const fuH = fuLines.length*5+8;
+    pdf.setFillColor(18,18,26);
+    pdf.rect(M,y,cW,fuH,'F');
+    pdf.text(fuLines,M+4,y+6);
+    y+=fuH+8;
+  }
+
+  // ── FOOTER ────────────────────────────────────────────────────────
+  const totalPages = pdf.internal.getNumberOfPages();
+  for(let p=1;p<=totalPages;p++){
+    pdf.setPage(p);
+    const pY = 297-8;
+    pdf.setFillColor(10,10,18);
+    pdf.rect(0,pY-2,W,12,'F');
+    pdf.setFillColor(232,197,71);
+    pdf.rect(0,pY-2,4,12,'F');
+    pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(100,96,88);
+    pdf.text('Generated by Shift Checklist System  |  Airport Operations  |  Confidential',M+4,pY+4);
+    pdf.text('Ref: '+sanitizeText(sub.staffId)+'-'+sanitizeText(sub.answers?.q1||'')+
+      '  |  Page '+p+' of '+totalPages, W-M, pY+4, {align:'right'});
+  }
+
+  const fname = 'ShiftReport-'+
+    (sub.staffId||'UNKNOWN').replace(/[^a-zA-Z0-9-]/g,'')+'-'+
+    new Date(sub.submittedAt).toISOString().split('T')[0]+'.pdf';
+  pdf.save(fname);
+}
+
+// ─── PAST SHIFTS ─────────────────────────────────────────────────────────────
+async function loadPastShifts(){
+  const el = document.getElementById('past-list');
+  el.innerHTML='<div class="loading"><div class="spinner"></div> Loading...</div>';
+  allQuestions = await dbAll('questions');
+  const subs = await dbAll('submissions');
+  subs.sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
+  if(!subs.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div>No shift reports yet.</div></div>';return;}
+  const badgeCls={'Normal Operations':'badge-normal','Minor Issues':'badge-minor','Major Disruption':'badge-major','Escalated':'badge-esc'};
+  el.innerHTML='<div class="shifts-grid">'+subs.map(s=>{
+    const d=new Date(s.submittedAt);
+    const dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    const timeStr=d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const cls=badgeCls[s.overallStatus]||'badge-normal';
+    return `<div class="shift-card">
+      <div class="shift-card-left">
+        <div class="shift-card-date">${dateStr} — ${s.answers?.q2||'Shift'}</div>
+        <div class="shift-card-meta">${s.staffName} · ${s.staffId} · ${timeStr}</div>
+      </div>
+      <div class="shift-card-right">
+        <span class="shift-badge ${cls}">${s.overallStatus||'Normal'}</span>
+        <button class="btn-dl" onclick='redownloadPDF(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Download PDF</button>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function redownloadPDF(sub){ generatePDF(sub); }
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+let adminLoggedIn = false;
+
+async function adminLogin(){
+  const sId = document.getElementById('admin-staff-input').value.trim().toUpperCase();
+  const pass = document.getElementById('admin-pass-input').value;
+  const staff = await dbGet('staff', sId);
+  if(!staff||!staff.isAdmin||staff.password!==pass){
+    showToast('Invalid credentials or no admin access.','error');return;
+  }
+  adminLoggedIn=true;
+  document.getElementById('admin-login-wrap').style.display='none';
+  document.getElementById('admin-panel-wrap').style.display='block';
+  renderAdminPanel();
+}
+
+function switchAdminTab(tab, btn){
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('[id^="admin-tab-"]').forEach(t=>t.classList.remove('active'));
+  document.getElementById('admin-tab-'+tab).classList.add('active');
+}
+
+async function renderAdminPanel(){
+  await renderStaffTab();
+  await renderQuestionsTab();
+  await renderSubmissionsTab();
+}
+
+async function renderStaffTab(){
+  allStaff = await dbAll('staff');
+  const el = document.getElementById('admin-tab-staff');
+  el.innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-title">Staff Members (${allStaff.length})</div>
+      <div class="staff-list">${allStaff.map(s=>`
+        <div class="staff-item">
+          <div class="staff-item-left">
+            <div class="staff-item-name">${s.name} ${s.isAdmin?'<span class="badge-admin">ADMIN</span>':''}</div>
+            <div class="staff-item-meta">${s.staffId}</div>
+          </div>
+          <div class="staff-item-right">
+            ${!s.isAdmin?`<button class="btn-sm btn-info" onclick="toggleAdmin('${s.staffId}',true)">Make Admin</button>`:`<button class="btn-sm btn-success" onclick="toggleAdmin('${s.staffId}',false)">Remove Admin</button>`}
+            <button class="btn-sm btn-danger" onclick="removeStaff('${s.staffId}')">Remove</button>
+          </div>
+        </div>`).join('')}
+      </div>
+      <div class="admin-section-title" style="margin-top:1.5rem">Add Staff Member</div>
+      <div class="add-form">
+        <div><div class="field-label" style="font-size:11px;margin-bottom:4px">Staff Number</div><input class="field-input" id="new-staff-id" placeholder="DO-115" style="font-size:12px"></div>
+        <div><div class="field-label" style="font-size:11px;margin-bottom:4px">Full Name</div><input class="field-input" id="new-staff-name" placeholder="Full Name" style="font-size:12px"></div>
+        <div><div class="field-label" style="font-size:11px;margin-bottom:4px">Password</div><input class="field-input" id="new-staff-pass" placeholder="Password" type="password" style="font-size:12px"></div>
+        <div><div class="field-label" style="font-size:11px;margin-bottom:4px">Role</div><select class="field-input" id="new-staff-admin" style="font-size:12px"><option value="false">Officer</option><option value="true">Admin</option></select></div>
+        <div class="add-form-full"><button class="btn-next" style="width:100%;font-size:13px;padding:10px" onclick="addStaff()">Add Staff Member</button></div>
+      </div>
+    </div>`;
+}
+
+async function addStaff(){
+  const id=document.getElementById('new-staff-id').value.trim().toUpperCase();
+  const name=document.getElementById('new-staff-name').value.trim();
+  const pass=document.getElementById('new-staff-pass').value;
+  const adm=document.getElementById('new-staff-admin').value==='true';
+  if(!id||!name||!pass){showToast('Fill all fields.','error');return;}
+  await dbSet('staff',id,{staffId:id,name,password:pass,isAdmin:adm,createdAt:new Date().toISOString()});
+  showToast('Staff member added!','success');
+  renderStaffTab();
+}
+
+async function removeStaff(id){
+  if(!confirm('Remove '+id+'?')) return;
+  await dbDel('staff',id);
+  showToast('Staff removed.','success');
+  renderStaffTab();
+}
+
+async function toggleAdmin(id,val){
+  await dbUpdate('staff',id,{isAdmin:val});
+  showToast('Admin access updated.','success');
+  renderStaffTab();
+}
+
+async function renderQuestionsTab(){
+  allQuestions = await dbAll('questions');
+  allQuestions.sort((a,b)=>parseInt(a.id.replace('q',''))||0 - parseInt(b.id.replace('q',''))||0);
+  const el = document.getElementById('admin-tab-questions');
+  el.innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-title">Questions (${allQuestions.length})</div>
+      <div class="q-list">${allQuestions.map(q=>`
+        <div class="q-item">
+          <div class="q-item-sec">${q.section}</div>
+          <div class="q-item-text">${q.label}</div>
+          <div class="q-item-type">Type: ${q.type} ${q.required?'· Required':'· Optional'}</div>
+          <div class="q-item-btns">
+            <button class="btn-sm btn-info" onclick='openEditQ(${JSON.stringify(q).replace(/'/g,"&#39;")})'>Edit</button>
+            <button class="btn-sm btn-danger" onclick="deleteQ('${q.id}')">Delete</button>
+          </div>
+        </div>`).join('')}
+      </div>
+      <button class="btn-next" style="width:100%;font-size:13px;padding:10px" onclick="openAddQ()">+ Add Question</button>
+    </div>`;
+}
+
+function openAddQ(){
+  openModal(`
+    <div class="modal-title">Add Question</div>
+    <div class="field"><div class="field-label">Section</div>
+      <select class="field-input" id="mq-section">${SECTIONS.map(s=>`<option>${s.label}</option>`).join('')}</select></div>
+    <div class="field"><div class="field-label">Question text</div><textarea class="field-input" id="mq-label" rows="3" placeholder="Enter question..."></textarea></div>
+    <div class="field"><div class="field-label">Type</div>
+      <select class="field-input" id="mq-type"><option value="yesno">Yes / No</option><option value="choice">Multiple choice</option><option value="text">Text input</option><option value="textarea">Long text</option><option value="date">Date</option><option value="status">Status (special)</option></select></div>
+    <div class="field" id="mq-opts-wrap"><div class="field-label">Options (one per line)</div><textarea class="field-input" id="mq-options" rows="4" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea></div>
+    <div class="field"><div class="field-label">Required?</div><select class="field-input" id="mq-req"><option value="true">Yes</option><option value="false">No</option></select></div>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-next" onclick="saveNewQ()">Save Question</button>
+    </div>`);
+}
+
+async function saveNewQ(){
+  const label=document.getElementById('mq-label').value.trim();
+  const section=document.getElementById('mq-section').value;
+  const type=document.getElementById('mq-type').value;
+  const req=document.getElementById('mq-req').value==='true';
+  const optsRaw=document.getElementById('mq-options')?.value||'';
+  const opts=optsRaw.split('\n').map(o=>o.trim()).filter(Boolean);
+  if(!label){showToast('Enter question text.','error');return;}
+  const newId='q'+(Date.now());
+  await dbSet('questions',newId,{id:newId,section,label,type,required:req,options:opts});
+  closeModal();showToast('Question added!','success');
+  renderQuestionsTab();
+}
+
+function openEditQ(q){
+  openModal(`
+    <div class="modal-title">Edit Question</div>
+    <div class="field"><div class="field-label">Section</div>
+      <select class="field-input" id="mq-section">${SECTIONS.map(s=>`<option ${s.label===q.section?'selected':''}>${s.label}</option>`).join('')}</select></div>
+    <div class="field"><div class="field-label">Question text</div><textarea class="field-input" id="mq-label" rows="3">${q.label}</textarea></div>
+    <div class="field"><div class="field-label">Type</div>
+      <select class="field-input" id="mq-type">
+        ${['yesno','choice','text','textarea','date','status'].map(t=>`<option value="${t}" ${q.type===t?'selected':''}>${t}</option>`).join('')}
+      </select></div>
+    <div class="field"><div class="field-label">Options (one per line)</div><textarea class="field-input" id="mq-options" rows="4">${(q.options||[]).join('\n')}</textarea></div>
+    <div class="field"><div class="field-label">Required?</div><select class="field-input" id="mq-req"><option value="true" ${q.required?'selected':''}>Yes</option><option value="false" ${!q.required?'selected':''}>No</option></select></div>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-next" onclick="saveEditQ('${q.id}')">Save Changes</button>
+    </div>`);
+}
+
+async function saveEditQ(id){
+  const label=document.getElementById('mq-label').value.trim();
+  const section=document.getElementById('mq-section').value;
+  const type=document.getElementById('mq-type').value;
+  const req=document.getElementById('mq-req').value==='true';
+  const optsRaw=document.getElementById('mq-options')?.value||'';
+  const opts=optsRaw.split('\n').map(o=>o.trim()).filter(Boolean);
+  await dbUpdate('questions',id,{label,section,type,required:req,options:opts});
+  closeModal();showToast('Question updated!','success');
+  renderQuestionsTab();
+}
+
+async function deleteQ(id){
+  if(!confirm('Delete this question?')) return;
+  await dbDel('questions',id);
+  showToast('Question deleted.','success');
+  renderQuestionsTab();
+}
+
+async function renderSubmissionsTab(){
+  const subs = await dbAll('submissions');
+  subs.sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
+  const el = document.getElementById('admin-tab-submissions');
+  const badgeCls={'Normal Operations':'badge-normal','Minor Issues':'badge-minor','Major Disruption':'badge-major','Escalated':'badge-esc'};
+  el.innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-title">All Submissions (${subs.length})</div>
+      ${subs.length?'<div class="shifts-grid">'+subs.map(s=>{
+        const d=new Date(s.submittedAt);
+        const cls=badgeCls[s.overallStatus]||'badge-normal';
+        return `<div class="shift-card">
+          <div class="shift-card-left">
+            <div class="shift-card-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} — ${s.answers?.q2||'Shift'}</div>
+            <div class="shift-card-meta">${s.staffName} · ${s.staffId}</div>
+          </div>
+          <div class="shift-card-right">
+            <span class="shift-badge ${cls}">${s.overallStatus||'Normal'}</span>
+            <button class="btn-dl" onclick='redownloadPDF(${JSON.stringify(s).replace(/'/g,"&#39;")})'>PDF</button>
+            <button class="btn-sm btn-danger" onclick="deleteSub('${s.id}')">Delete</button>
+          </div>
+        </div>`;
+      }).join('')+'</div>':'<div class="empty-state"><div class="empty-icon">📋</div><div>No submissions yet.</div></div>'}
+    </div>`;
+}
+
+async function deleteSub(id){
+  if(!confirm('Delete this submission?')) return;
+  await dbDel('submissions',id);
+  showToast('Submission deleted.','success');
+  renderSubmissionsTab();
+}
+
+// ─── MODAL & TOAST ────────────────────────────────────────────────────────────
+function openModal(html){
+  document.getElementById('modal-content').innerHTML=html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+document.getElementById('modal-overlay').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+
+let toastTimer;
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast toast-'+type+' show';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>
