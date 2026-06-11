@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shift Checklist — Airport Operations</title>
+<title>Shift Checklist -- Airport Operations</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
@@ -252,7 +252,7 @@ select.f-inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 <div class="page active" id="page-landing" style="display:flex">
   <div class="land-bg"></div><div class="land-grid"></div>
   <div class="land-box">
-    <div class="land-badge">✦ Airport Operations</div>
+    <div class="land-badge">* Airport Operations</div>
     <h1 class="land-title">Shift<br><span>Checklist</span></h1>
     <p class="land-sub">Enter your staff number to access your shift checklist.</p>
     <div class="land-card">
@@ -279,7 +279,7 @@ select.f-inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 <!-- PAST SHIFTS -->
 <div class="page" id="page-past">
   <div class="page-wrap">
-    <div class="page-hdr"><div class="page-title">Past Shifts</div><div class="page-sub">All submitted shift reports — click Download to save PDF.</div></div>
+    <div class="page-hdr"><div class="page-title">Past Shifts</div><div class="page-sub">All submitted shift reports -- click Download to save PDF.</div></div>
     <div id="past-list"><div class="loading"><div class="spin"></div>Loading...</div></div>
   </div>
 </div>
@@ -343,9 +343,9 @@ select.f-inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // FIREBASE INIT
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 const FB_CONFIG = {
   apiKey: "AIzaSyCOrN93HtjK8J8vYQaGeUWyFSEm5yFMjYA",
   authDomain: "shift-checklist-300c6.firebaseapp.com",
@@ -379,28 +379,28 @@ async function dbAll(col) {
   return s.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // DEFAULT DATA
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 const WT_OPTS = ['Under 5 min','5-10 min','10-15 min','15-20 min','20+ min','Not applicable'];
 const DESK_OPTS = ['All open','Partially open','Minimal open'];
 const PAX_OPTS = ['0-25 pax','26-50 pax','51-75 pax','76-100 pax','101-200 pax','201-300 pax','301-400 pax','400+ pax','Not applicable'];
 const REASON_OPTS = [
-  'Not applicable — operating at full capacity',
+  'Not applicable -- operating at full capacity',
   'Police staffing shortage',
-  'Female officer on duty — returning from another checkpoint or area',
+  'Female officer on duty -- returning from another checkpoint or area',
   'Police officers on break',
-  'SAS staff absent — boarding not yet commenced',
+  'SAS staff absent -- boarding not yet commenced',
   'Police unresponsive to requests for additional lanes from SAS / Duty Officer',
-  'Not applicable — minimal passenger activity'
+  'Not applicable -- minimal passenger activity'
 ];
 const STAFF_REASONS = [
-  'All desks / counters fully staffed — no issue',
-  'Officer absence — reduced staffing',
-  'Low passenger volume — reduced desks in operation',
+  'All desks / counters fully staffed -- no issue',
+  'Officer absence -- reduced staffing',
+  'Low passenger volume -- reduced desks in operation',
   'Shift changeover in progress',
-  'Additional desks requested — responded promptly',
-  'Additional desks requested — no response received',
+  'Additional desks requested -- responded promptly',
+  'Additional desks requested -- no response received',
   'System issue reported'
 ];
 
@@ -424,58 +424,58 @@ const DEFAULT_SECTIONS = [
 ];
 
 const DEFAULT_QUESTIONS = [
-  // S1 — DO Details
+  // S1 -- DO Details
   {id:'q1', section:'DO Details',     label:'Shift date',type:'date',required:true},
   {id:'q2', section:'DO Details',     label:'Shift period',type:'choice',options:['Morning  06:00 - 14:00','Afternoon  14:00 - 22:00','Night  22:00 - 06:00'],required:true},
   {id:'q4', section:'DO Details',     label:'Duty Officer full name and staff number',type:'text',required:true},
   {id:'q4n',section:'DO Details',     label:'Section notes',type:'textarea',required:false},
-  // S2 — Ops Management
-  {id:'q5', section:'Ops Management', label:'SAS and Cargo operations observed this shift — any issues noted?',type:'choice',options:['Observed — no issues','Observed — issues noted','Not observed this shift'],required:true},
+  // S2 -- Ops Management
+  {id:'q5', section:'Ops Management', label:'SAS and Cargo operations observed this shift -- any issues noted?',type:'choice',options:['Observed -- no issues','Observed -- issues noted','Not observed this shift'],required:true},
   {id:'q6', section:'Ops Management', label:'Police and SSP presence at drop-off area adequate and managing vehicle traffic effectively?',type:'yesno',required:true},
   {id:'q7', section:'Ops Management', label:'Arrival car park or drop-off area diversion activated this shift?',type:'yesno',required:true},
   {id:'q7n',section:'Ops Management', label:'Section notes',type:'textarea',required:false},
-  // S3 — Passenger Flow (notes only — cards are hardcoded)
+  // S3 -- Passenger Flow (notes only -- cards are hardcoded)
   {id:'q14n',section:'Passenger Flow',label:'Section notes',type:'textarea',required:false},
-  // S4 — Gate Screening
+  // S4 -- Gate Screening
   {id:'q15', section:'Gate Screening',label:'Police checkpoint staffing at 75% as required under MOU Section 7?',type:'yesno',required:true},
   {id:'q15b',section:'Gate Screening',label:'During peak periods, police checkpoint staffing at 100% per MOU Section 7?',type:'yesno',required:true},
   {id:'q23n',section:'Gate Screening',label:'Section notes',type:'textarea',required:false},
-  // S5 — Baggage Hall
+  // S5 -- Baggage Hall
   {id:'qbh1',section:'Baggage Hall',  label:'Number of baggage belts in operation',type:'choice',options:['1','2','3','4','5','6'],required:true},
   {id:'qbh2',section:'Baggage Hall',  label:'Baggage belts operating without disruptions?',type:'yesno',required:true},
-  {id:'qbh3',section:'Baggage Hall',  label:'Trolleys available in baggage hall?',type:'choice',options:['Yes — sufficient','Replenishment needed — CSP informed to expedite'],required:true},
+  {id:'qbh3',section:'Baggage Hall',  label:'Trolleys available in baggage hall?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true},
   {id:'qbh4',section:'Baggage Hall',  label:'Any issues with Lost & Found (L&F)?',type:'yesno',required:true},
   {id:'qbh5',section:'Baggage Hall',  label:'Any issues with Vets / MOHAP (personal medications)?',type:'yesno',required:true},
   {id:'qbh6',section:'Baggage Hall',  label:'Any issues with Arrivals Duty Free?',type:'yesno',required:true},
   {id:'qbhn',section:'Baggage Hall',  label:'Section notes',type:'textarea',required:false},
-  // S6 — Kerb & Trolleys
-  {id:'q24', section:'Kerb & Trolleys',label:'Departure kerb — Porter availability adequate?',type:'yesno',required:true},
-  {id:'q25', section:'Kerb & Trolleys',label:'Departure kerb — Trolley stands adequately stocked?',type:'choice',options:['Yes — sufficient','Replenishment needed — CSP informed to expedite'],required:true},
-  {id:'q26', section:'Kerb & Trolleys',label:'Arrivals area — Trolley availability adequate?',type:'choice',options:['Yes — sufficient','Replenishment needed — CSP informed to expedite'],required:true},
+  // S6 -- Kerb & Trolleys
+  {id:'q24', section:'Kerb & Trolleys',label:'Departure kerb -- Porter availability adequate?',type:'yesno',required:true},
+  {id:'q25', section:'Kerb & Trolleys',label:'Departure kerb -- Trolley stands adequately stocked?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true},
+  {id:'q26', section:'Kerb & Trolleys',label:'Arrivals area -- Trolley availability adequate?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true},
   {id:'q26n',section:'Kerb & Trolleys',label:'Section notes',type:'textarea',required:false},
-  // S7 — Ops Reporting
-  {id:'q27', section:'Ops Reporting', label:'All critical systems operational? (FIDS, X-ray, Smart Gates, Immigration counters, lighting)',type:'choice',options:['Yes — all operational','No — fault raised to CNS / SAA IT'],required:true},
+  // S7 -- Ops Reporting
+  {id:'q27', section:'Ops Reporting', label:'All critical systems operational? (FIDS, X-ray, Smart Gates, Immigration counters, lighting)',type:'choice',options:['Yes -- all operational','No -- fault raised to CNS / SAA IT'],required:true},
   {id:'q29', section:'Ops Reporting', label:'SAS Porters available for passenger assistance and belt management?',type:'yesno',required:true},
   {id:'q30', section:'Ops Reporting', label:'Number of arrival baggage belts staffed by Customs during peak',type:'choice',options:['4 belts','5 belts','6 belts'],required:true},
-  {id:'q31', section:'Ops Reporting', label:'Ramp and cargo operations status this shift',type:'choice',options:['Stable — physically monitored','Stable — remotely confirmed via Ops Manager','Issues observed and logged'],required:true},
+  {id:'q31', section:'Ops Reporting', label:'Ramp and cargo operations status this shift',type:'choice',options:['Stable -- physically monitored','Stable -- remotely confirmed via Ops Manager','Issues observed and logged'],required:true},
   {id:'q32', section:'Ops Reporting', label:'Contractor compliance checks completed with no major irregularities?',type:'yesno',required:true},
   {id:'q33', section:'Ops Reporting', label:'Any disruptions, system failures or emergency situations during this shift?',type:'yesno',required:true},
   {id:'q34', section:'Ops Reporting', label:'Management escalation required at any point this shift?',type:'yesno',required:true},
   {id:'q34n',section:'Ops Reporting', label:'Section notes',type:'textarea',required:false},
-  // S8 — SAS Checks
+  // S8 -- SAS Checks
   {id:'q35', section:'SAS Checks',    label:'BCT/BTR bag handling monitoring report submitted for this shift?',type:'yesno',required:false},
   {id:'q36', section:'SAS Checks',    label:'Departure PAX bus transport report submitted for this shift?',type:'yesno',required:true},
   {id:'q36n',section:'SAS Checks',    label:'Section notes',type:'textarea',required:false},
-  // S9 — Shift Closure
+  // S9 -- Shift Closure
   {id:'q37', section:'Shift Closure', label:'Overall shift classification',type:'status',options:['Normal Operations','Minor Issues','Major Disruption','Escalated'],required:true},
-  {id:'q38', section:'Shift Closure', label:'End of shift summary — key events, decisions and handover notes for the incoming officer',type:'textarea',required:true},
+  {id:'q38', section:'Shift Closure', label:'End of shift summary -- key events, decisions and handover notes for the incoming officer',type:'textarea',required:true},
   {id:'q39', section:'Shift Closure', label:'Outstanding items or follow-up actions to be logged in the Operational Planner',type:'textarea',required:false},
   {id:'q39n',section:'Shift Closure', label:'Section notes',type:'textarea',required:false}
 ];
 
-════════════════════════════════════════════════════════════════
+????????????????????????????????????????????????????????????????
 // STATE
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 let currentUser = null;
 let currentSection = 0;
 let formAnswers = {};
@@ -483,9 +483,9 @@ let allQuestions = [];
 let allSections = [];
 let adminLoggedIn = false;
 
-// ═══════════════════════════════════════════════════════════════════
-// INIT — runs immediately since compat SDK loads synchronously
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
+// INIT -- runs immediately since compat SDK loads synchronously
+// -----------------------------------------------
 async function init() {
   try {
     await seedDefaults();
@@ -498,14 +498,14 @@ async function init() {
         else localStorage.removeItem('shiftUser');
       } catch(e) { localStorage.removeItem('shiftUser'); }
     }
-    // Ready — enable login
-    setConnStatus('connected', '✓ Connected — enter your staff number');
-    document.getElementById('login-btn').textContent = 'Access Checklist →';
+    // Ready -- enable login
+    setConnStatus('connected', '? Connected -- enter your staff number');
+    document.getElementById('login-btn').textContent = 'Access Checklist ?';
     document.getElementById('login-btn').disabled = false;
   } catch(e) {
     console.error('Init error:', e);
-    setConnStatus('failed', '✗ Connection failed — reload the page');
-    document.getElementById('login-btn').textContent = 'Connection failed — reload';
+    setConnStatus('failed', '? Connection failed -- reload the page');
+    document.getElementById('login-btn').textContent = 'Connection failed -- reload';
   }
 }
 
@@ -538,9 +538,9 @@ if (document.readyState === 'loading') {
   init();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // AUTH
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function doLogin() {
   const val = document.getElementById('staff-inp').value.trim().toUpperCase();
   if (!val) return;
@@ -552,7 +552,7 @@ async function doLogin() {
     const staff = await dbGet('staff', val);
     if (!staff) {
       errEl.style.display = 'block';
-      document.getElementById('login-btn').textContent = 'Access Checklist →';
+      document.getElementById('login-btn').textContent = 'Access Checklist ?';
       document.getElementById('login-btn').disabled = false;
       return;
     }
@@ -561,14 +561,14 @@ async function doLogin() {
     afterLogin();
   } catch(e) {
     showToast('Error connecting. Please try again.', 'err');
-    document.getElementById('login-btn').textContent = 'Access Checklist →';
+    document.getElementById('login-btn').textContent = 'Access Checklist ?';
     document.getElementById('login-btn').disabled = false;
   }
 }
 
 function afterLogin() {
   document.getElementById('main-nav').style.display = 'flex';
-  document.getElementById('nav-badge').textContent = currentUser.staffId + ' — ' + currentUser.name;
+  document.getElementById('nav-badge').textContent = currentUser.staffId + ' -- ' + currentUser.name;
   showPage('checklist');
   initChecklist();
 }
@@ -581,15 +581,15 @@ function logout() {
   document.getElementById('admin-panel').style.display = 'none';
   document.getElementById('staff-inp').value = '';
   document.getElementById('staff-err').style.display = 'none';
-  setConnStatus('connected', '✓ Connected — enter your staff number');
-  document.getElementById('login-btn').textContent = 'Access Checklist →';
+  setConnStatus('connected', '? Connected -- enter your staff number');
+  document.getElementById('login-btn').textContent = 'Access Checklist ?';
   document.getElementById('login-btn').disabled = false;
   showPage('landing');
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // PAGES
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -600,9 +600,9 @@ function showPage(name) {
   if (name === 'reports') { const n = new Date(); const m = document.getElementById('rep-month'); const y = document.getElementById('rep-year'); if(m)m.value=n.getMonth(); if(y)y.value=n.getFullYear(); }
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // CHECKLIST
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function initChecklist() {
   const [qs, ss] = await Promise.all([dbAll('questions'), dbAll('sections')]);
   allQuestions = qs.sort((a,b) => (a.id < b.id ? -1 : 1));
@@ -616,7 +616,7 @@ async function initChecklist() {
 function renderNav() {
   document.getElementById('cl-nav').innerHTML = allSections.map((s,i) =>
     `<div class="cl-nav-item ${i===0?'active':''}" id="cnav-${i}" onclick="gotoSec(${i})">
-      <div class="cl-nav-dot"></div>${i+1} · ${s.label}
+      <div class="cl-nav-dot"></div>${i+1} ? ${s.label}
     </div>`
   ).join('');
 }
@@ -664,7 +664,7 @@ function buildTimeRange(fromId, toId) {
   const opts2 = HHMM_OPTS.map(o => `<option value="${o}" ${tv===o?'selected':''}>${o.slice(0,2)}:${o.slice(2)}</option>`).join('');
   return `<div class="time-range">
     <div><div class="mini-lbl">From</div><select class="f-inp" style="font-size:11px" onchange="saveAns('${fromId}',this.value)"><option value="">--:--</option>${opts}</select></div>
-    <div class="time-arrow">→</div>
+    <div class="time-arrow">?</div>
     <div><div class="mini-lbl">To</div><select class="f-inp" style="font-size:11px" onchange="saveAns('${toId}',this.value)"><option value="">--:--</option>${opts2}</select></div>
   </div>`;
 }
@@ -885,9 +885,9 @@ function renderQ(q) {
 function renderFooter(idx, total) {
   const isLast = idx === total - 1;
   return `<div class="sec-footer">
-    ${idx>0?`<button class="btn-sec" onclick="renderSection(${idx-1})">← Back</button>`:'<div></div>'}
+    ${idx>0?`<button class="btn-sec" onclick="renderSection(${idx-1})">? Back</button>`:'<div></div>'}
     <span class="pg-txt">Section ${idx+1} of ${total}</span>
-    <button class="btn-next" onclick="${isLast?'doSubmit()':'renderSection('+(idx+1)+')'}">${isLast?'Submit Shift ✓':'Next Section →'}</button>
+    <button class="btn-next" onclick="${isLast?'doSubmit()':'renderSection('+(idx+1)+')'}">${isLast?'Submit Shift ?':'Next Section ?'}</button>
   </div>`;
 }
 
@@ -921,13 +921,13 @@ function togStatus(el, id, val, cls) {
   autoDraft();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // SUBMIT
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 
-// ═══════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // AUTO-SAVE DRAFT
-// ═══════════════════════════════════════════════════════════════
+// -----------------------------------------------
 let draftTimer = null;
 function autoDraft(){
   clearTimeout(draftTimer);
@@ -986,15 +986,15 @@ async function doSubmit() {
 }
 
 function renderConfirm(sub) {
-  const d = sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-  const status = sub.overallStatus || '—';
+  const d = sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '--';
+  const status = sub.overallStatus || '--';
   const sc = {'Normal Operations':'var(--green)','Minor Issues':'var(--amber)','Major Disruption':'var(--red)','Escalated':'var(--blue)'}[status]||'var(--text)';
   document.getElementById('cl-main').innerHTML = `<div class="confirm-wrap">
-    <div class="confirm-icon">✓</div>
+    <div class="confirm-icon">?</div>
     <div class="confirm-title">Shift Submitted</div>
     <div class="confirm-sub">Saved to Firebase. PDF downloading now.</div>
     <div class="confirm-meta">
-      <div class="meta-row"><span class="meta-k">Officer</span><span class="meta-v">${sub.staffName} — ${sub.staffId}</span></div>
+      <div class="meta-row"><span class="meta-k">Officer</span><span class="meta-v">${sub.staffName} -- ${sub.staffId}</span></div>
       <div class="meta-row"><span class="meta-k">Submitted</span><span class="meta-v">${d}</span></div>
       <div class="meta-row"><span class="meta-k">Status</span><span class="meta-v" style="color:${sc}">${status}</span></div>
     </div>
@@ -1007,9 +1007,9 @@ function renderConfirm(sub) {
   document.getElementById('cl-prog').style.width = '100%';
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // PDF
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 function clean(str) {
   return String(str||'')
     .replace(/\u2013/g,'-').replace(/\u2014/g,'--')
@@ -1050,13 +1050,13 @@ function genPDF(sub) {
   pdf.setTextColor(140,140,150); pdf.setFontSize(6); pdf.setFont('helvetica','normal');
   pdf.text('OFFICER',ox+2,y+5); pdf.text('STAFF ID',ox+oW+2,y+5); pdf.text('SHIFT',ox+oW*2+2,y+5);
   pdf.setTextColor(30,30,40); pdf.setFontSize(7.5); pdf.setFont('helvetica','bold');
-  pdf.text(clean(sub.staffName||'—'),ox+2,y+10);
-  pdf.text(clean(sub.staffId||'—'),ox+oW+2,y+10);
-  pdf.text(clean(ans.q2||'—'),ox+oW*2+2,y+10);
+  pdf.text(clean(sub.staffName||'--'),ox+2,y+10);
+  pdf.text(clean(sub.staffId||'--'),ox+oW+2,y+10);
+  pdf.text(clean(ans.q2||'--'),ox+oW*2+2,y+10);
   y+=17;
 
   pdf.setFontSize(6.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(130,130,140);
-  pdf.text('Date: '+clean(ans.q1||dateStr)+'   DO: '+clean(ans.q4||'—'),M,y);
+  pdf.text('Date: '+clean(ans.q1||dateStr)+'   DO: '+clean(ans.q4||'--'),M,y);
   y+=5; pdf.setDrawColor(220,220,228); pdf.line(M,y,M+cW,y); y+=3;
 
   // Answers
@@ -1108,7 +1108,7 @@ function genPDF(sub) {
     if (!smap[q.section]) { smap[q.section]={label:q.section,questions:[]}; secs.push(smap[q.section]); }
     smap[q.section].questions.push(q);
   });
-  const vcols={'Yes':[39,174,96],'No':[192,57,43],'Normal Operations':[39,174,96],'Minor Issues':[230,126,34],'Major Disruption':[192,57,43],'Escalated':[41,128,185],'Observed — no issues':[39,174,96],'Observed — issues noted':[192,57,43],'Yes — all operational':[39,174,96],'No — fault raised to CNS / SAA IT':[192,57,43],'Yes — sufficient':[39,174,96],'Replenishment needed — CSP informed to expedite':[230,126,34],'Stable — physically monitored':[39,174,96],'Issues observed and logged':[192,57,43]};
+  const vcols={'Yes':[39,174,96],'No':[192,57,43],'Normal Operations':[39,174,96],'Minor Issues':[230,126,34],'Major Disruption':[192,57,43],'Escalated':[41,128,185],'Observed -- no issues':[39,174,96],'Observed -- issues noted':[192,57,43],'Yes -- all operational':[39,174,96],'No -- fault raised to CNS / SAA IT':[192,57,43],'Yes -- sufficient':[39,174,96],'Replenishment needed -- CSP informed to expedite':[230,126,34],'Stable -- physically monitored':[39,174,96],'Issues observed and logged':[192,57,43]};
   const RH=5.2;
 
   // Inject virtual sections into secs list if not already there
@@ -1189,24 +1189,24 @@ function genPDF(sub) {
   pdf.save(fname);
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // PAST SHIFTS
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function loadPast() {
   const el=document.getElementById('past-list');
   el.innerHTML='<div class="loading"><div class="spin"></div>Loading...</div>';
   allQuestions=await dbAll('questions');
   const subs=await dbAll('submissions');
   subs.sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
-  if(!subs.length){el.innerHTML='<div class="empty">📋 No shift reports yet.</div>';return;}
+  if(!subs.length){el.innerHTML='<div class="empty">? No shift reports yet.</div>';return;}
   const bc={'Normal Operations':'b-normal','Minor Issues':'b-minor','Major Disruption':'b-major','Escalated':'b-esc'};
   el.innerHTML='<div class="shifts-grid">'+subs.map(s=>{
     const d=new Date(s.submittedAt);
     const cls=bc[s.overallStatus]||'b-normal';
     return`<div class="shift-card">
       <div>
-        <div class="shift-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} — ${s.answers?.q2||'Shift'}</div>
-        <div class="shift-meta">${s.staffName} · ${s.staffId} · ${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="shift-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} -- ${s.answers?.q2||'Shift'}</div>
+        <div class="shift-meta">${s.staffName} ? ${s.staffId} ? ${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
       </div>
       <div class="shift-right">
         <span class="shift-badge ${cls}">${s.overallStatus||'Normal'}</span>
@@ -1217,9 +1217,9 @@ async function loadPast() {
 }
 function rePDF(sub){genPDF(sub);}
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // MONTHLY REPORT
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function genMonthlyReport(){
   const month=parseInt(document.getElementById('rep-month').value);
   const year=parseInt(document.getElementById('rep-year').value);
@@ -1251,12 +1251,12 @@ async function genMonthlyReport(){
       // Background bar
       pdf.setFillColor(235,235,240);
       pdf.rect(M+labelW, by, barW, bh, 'F');
-      // Filled bar — cap at barW so it never overflows
+      // Filled bar -- cap at barW so it never overflows
       const ratio = (maxV>0&&vals[i]>0) ? Math.min(vals[i]/maxV, 1) : 0;
       const fw = ratio * barW;
       pdf.setFillColor(...col);
       pdf.rect(M+labelW, by, fw, bh, 'F');
-      // Value label — always printed at fixed right position
+      // Value label -- always printed at fixed right position
       pdf.setFontSize(6);pdf.setFont('helvetica','bold');pdf.setTextColor(50,50,65);
       pdf.text(String(vals[i]), M+labelW+barW+2, by+bh/2+1.5);
     });
@@ -1318,13 +1318,13 @@ async function genMonthlyReport(){
   const aPX=areas.map(a=>avg(subs.map(s=>pxN(s.answers?.[a.pq])).filter(v=>v>0)));
   const aCT=areas.map(a=>avg(subs.map(s=>parseInt(s.answers?.[a.cq])||0).filter(v=>v>0)));
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow — Avg Waiting Time (min)',[39,120,96]);
+  secHdr('Passenger Flow -- Avg Waiting Time (min)',[39,120,96]);
   y=bar(areas.map(a=>a.l),aWT,25,y,8,[230,126,34]);
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow — Avg PAX Volume',[80,60,160]);
+  secHdr('Passenger Flow -- Avg PAX Volume',[80,60,160]);
   y=bar(areas.map(a=>a.l),aPX,500,y,8,[85,136,238]);
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow — Avg Desks/Counters',[60,100,80]);
+  secHdr('Passenger Flow -- Avg Desks/Counters',[60,100,80]);
   y=bar(areas.map(a=>a.l),aCT,100,y,8,[76,175,130]);
   // Gates
   const gates=[{l:'G6-26',wq:'q16a',pq:'q16p',xq:'q16'},{l:'G1-3',wq:'q18a',pq:'q18p',xq:'q19'},{l:'G4-5',wq:'q21a',pq:'q21p',xq:'q22'}];
@@ -1332,17 +1332,17 @@ async function genMonthlyReport(){
   const gPX=gates.map(g=>avg(subs.map(s=>pxN(s.answers?.[g.pq])).filter(v=>v>0)));
   const gXR=gates.map(g=>avg(subs.map(s=>parseInt(s.answers?.[g.xq])||0).filter(v=>v>0)));
   if(y>200){pdf.addPage();y=M;}else y+=6;
-  secHdr('Gate Screening — Avg Waiting Time (min)',[160,100,30]);
+  secHdr('Gate Screening -- Avg Waiting Time (min)',[160,100,30]);
   y=bar(gates.map(g=>g.l),gWT,25,y,8,[230,126,34]);
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Gate Screening — Avg X-Rays in Operation',[120,60,30]);
+  secHdr('Gate Screening -- Avg X-Rays in Operation',[120,60,30]);
   y=bar(gates.map(g=>g.l),gXR,5,y,8,[232,197,71]);
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Gate Screening — Avg PAX Volume',[80,40,120]);
+  secHdr('Gate Screening -- Avg PAX Volume',[80,40,120]);
   y=bar(gates.map(g=>g.l),gPX,500,y,8,[85,136,238]);
   // Submissions list
   if(y>220){pdf.addPage();y=M;}else y+=6;
-  secHdr('Submissions — '+mName+' '+year,[40,40,60]);
+  secHdr('Submissions -- '+mName+' '+year,[40,40,60]);
   pdf.setFontSize(6.5);pdf.setFont('helvetica','bold');pdf.setTextColor(100,100,110);
   pdf.text('Date',M+2,y);pdf.text('Shift',M+30,y);pdf.text('Officer',M+60,y);pdf.text('Status',M+105,y);y+=5;
   subs.forEach(s=>{
@@ -1352,10 +1352,10 @@ async function genMonthlyReport(){
     pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(60,60,75);
     pdf.text(sc(d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})),M+2,y+4);
     pdf.text(sc((s.answers?.q2||'').substring(0,18)),M+30,y+4);
-    pdf.text(sc(s.staffName||'—'),M+60,y+4);
+    pdf.text(sc(s.staffName||'--'),M+60,y+4);
     const vc={'Normal Operations':[39,174,96],'Minor Issues':[230,126,34],'Major Disruption':[192,57,43],'Escalated':[41,128,185]}[s.overallStatus]||[100,100,110];
     pdf.setTextColor(...vc);pdf.setFont('helvetica','bold');
-    pdf.text(sc(s.overallStatus||'—'),M+105,y+4);
+    pdf.text(sc(s.overallStatus||'--'),M+105,y+4);
     y+=7;
   });
   const tp=pdf.internal.getNumberOfPages();
@@ -1367,12 +1367,12 @@ async function genMonthlyReport(){
     pdf.text('Page '+p+'/'+tp,W-M,298,{align:'right'});
   }
   pdf.save('Monthly-Report-'+mName+'-'+year+'.pdf');
-  prev.innerHTML=`<div class="empty" style="color:var(--green)">✓ Report for ${mName} ${year} downloaded — ${subs.length} shifts included.</div>`;
+  prev.innerHTML=`<div class="empty" style="color:var(--green)">? Report for ${mName} ${year} downloaded -- ${subs.length} shifts included.</div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // ADMIN
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function doAdminLogin(){
   const sid=document.getElementById('adm-staff').value.trim().toUpperCase();
   const pass=document.getElementById('adm-pass').value;
@@ -1447,12 +1447,12 @@ async function renderSections(){
   const PROT=['Passenger Flow','Gate Screening'];
   document.getElementById('tab-sections').innerHTML=`<div class="a-sec">
     <div class="a-sec-title">Sections (${allSections.length})</div>
-    <div class="warn-box">⚠ Sections marked Protected have a custom card layout. Rename with caution.</div>
+    <div class="warn-box">? Sections marked Protected have a custom card layout. Rename with caution.</div>
     ${allSections.map((s,i)=>`<div class="item-row">
       <div><div class="item-name">${i+1}. ${s.label} ${PROT.includes(s.label)?'<span class="badge-prot">Protected</span>':''}</div><div class="item-meta">${s.sub||'No description'}</div></div>
       <div class="item-right">
-        <button class="ord-btn" onclick="moveUp('${s.id}')" ${i===0?'disabled':''}>▲</button>
-        <button class="ord-btn" onclick="moveDown('${s.id}')" ${i===allSections.length-1?'disabled':''}>▼</button>
+        <button class="ord-btn" onclick="moveUp('${s.id}')" ${i===0?'disabled':''}>?</button>
+        <button class="ord-btn" onclick="moveDown('${s.id}')" ${i===allSections.length-1?'disabled':''}>?</button>
         <button class="btn-sm btn-info" onclick='editSection(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Edit</button>
         ${!PROT.includes(s.label)?`<button class="btn-sm btn-danger" onclick="delSection('${s.id}','${s.label}')">Delete</button>`:''}
       </div>
@@ -1521,7 +1521,7 @@ async function renderQuestions(){
     ${allQuestions.map(q=>`<div class="q-item">
       <div class="q-sec">${q.section}</div>
       <div class="q-text">${q.label}</div>
-      <div class="q-type">Type: ${q.type} · ${q.required?'Required':'Optional'}</div>
+      <div class="q-type">Type: ${q.type} ? ${q.required?'Required':'Optional'}</div>
       <div class="q-btns">
         <button class="btn-sm btn-info" onclick='editQ(${JSON.stringify(q).replace(/'/g,"&#39;")})'>Edit</button>
         <button class="btn-sm btn-danger" onclick="delQ('${q.id}')">Delete</button>
@@ -1581,8 +1581,8 @@ async function renderSubmissions(){
     ${subs.length?'<div class="shifts-grid">'+subs.map(s=>{
       const d=new Date(s.submittedAt);const cls=bc[s.overallStatus]||'b-normal';
       return`<div class="shift-card">
-        <div><div class="shift-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} — ${s.answers?.q2||''}</div>
-        <div class="shift-meta">${s.staffName} · ${s.staffId}</div></div>
+        <div><div class="shift-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} -- ${s.answers?.q2||''}</div>
+        <div class="shift-meta">${s.staffName} ? ${s.staffId}</div></div>
         <div class="shift-right">
           <span class="shift-badge ${cls}">${s.overallStatus||'Normal'}</span>
           <button class="btn-dl" onclick='rePDF(${JSON.stringify(s).replace(/'/g,"&#39;")})'>PDF</button>
@@ -1594,9 +1594,9 @@ async function renderSubmissions(){
 }
 async function delSub(id){if(!confirm('Delete?'))return;await dbDel('submissions',id);showToast('Deleted.','ok');renderSubmissions();}
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // MODAL & TOAST
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 function openModal(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-overlay').classList.add('open');}
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
 document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
@@ -1783,9 +1783,9 @@ function renderQ(q) {
 function renderFooter(idx, total) {
   const isLast = idx === total - 1;
   return `<div class="sec-footer">
-    ${idx>0?`<button class="btn-sec" onclick="renderSection(${idx-1})">← Back</button>`:'<div></div>'}
+    ${idx>0?`<button class="btn-sec" onclick="renderSection(${idx-1})">? Back</button>`:'<div></div>'}
     <span class="pg-txt">Section ${idx+1} of ${total}</span>
-    <button class="btn-next" onclick="${isLast?'doSubmit()':'renderSection('+(idx+1)+')'}">${isLast?'Submit Shift ✓':'Next Section →'}</button>
+    <button class="btn-next" onclick="${isLast?'doSubmit()':'renderSection('+(idx+1)+')'}">${isLast?'Submit Shift ?':'Next Section ?'}</button>
   </div>`;
 }
 
@@ -1819,9 +1819,9 @@ function togStatus(el, id, val, cls) {
   autoDraft();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // SUBMIT
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function doSubmit() {
   if (!formAnswers['q38']) { showToast('Please complete the End of Shift Summary.','err'); return; }
   const sub = {
@@ -1843,15 +1843,15 @@ async function doSubmit() {
 }
 
 function renderConfirm(sub) {
-  const d = sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-  const status = sub.overallStatus || '—';
+  const d = sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '--';
+  const status = sub.overallStatus || '--';
   const sc = {'Normal Operations':'var(--green)','Minor Issues':'var(--amber)','Major Disruption':'var(--red)','Escalated':'var(--blue)'}[status]||'var(--text)';
   document.getElementById('cl-main').innerHTML = `<div class="confirm-wrap">
-    <div class="confirm-icon">✓</div>
+    <div class="confirm-icon">?</div>
     <div class="confirm-title">Shift Submitted</div>
     <div class="confirm-sub">Saved to Firebase. PDF downloading now.</div>
     <div class="confirm-meta">
-      <div class="meta-row"><span class="meta-k">Officer</span><span class="meta-v">${sub.staffName} — ${sub.staffId}</span></div>
+      <div class="meta-row"><span class="meta-k">Officer</span><span class="meta-v">${sub.staffName} -- ${sub.staffId}</span></div>
       <div class="meta-row"><span class="meta-k">Submitted</span><span class="meta-v">${d}</span></div>
       <div class="meta-row"><span class="meta-k">Status</span><span class="meta-v" style="color:${sc}">${status}</span></div>
     </div>
@@ -1864,9 +1864,9 @@ function renderConfirm(sub) {
   document.getElementById('cl-prog').style.width = '100%';
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // PDF
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 function clean(str) {
   return String(str||'')
     .replace(/\u2013/g,'-').replace(/\u2014/g,'--')
@@ -1907,13 +1907,13 @@ function genPDF(sub) {
   pdf.setTextColor(140,140,150); pdf.setFontSize(6); pdf.setFont('helvetica','normal');
   pdf.text('OFFICER',ox+2,y+5); pdf.text('STAFF ID',ox+oW+2,y+5); pdf.text('SHIFT',ox+oW*2+2,y+5);
   pdf.setTextColor(30,30,40); pdf.setFontSize(7.5); pdf.setFont('helvetica','bold');
-  pdf.text(clean(sub.staffName||'—'),ox+2,y+10);
-  pdf.text(clean(sub.staffId||'—'),ox+oW+2,y+10);
-  pdf.text(clean(ans.q2||'—'),ox+oW*2+2,y+10);
+  pdf.text(clean(sub.staffName||'--'),ox+2,y+10);
+  pdf.text(clean(sub.staffId||'--'),ox+oW+2,y+10);
+  pdf.text(clean(ans.q2||'--'),ox+oW*2+2,y+10);
   y+=17;
 
   pdf.setFontSize(6.5); pdf.setFont('helvetica','normal'); pdf.setTextColor(130,130,140);
-  pdf.text('Date: '+clean(ans.q1||dateStr)+'   DO: '+clean(ans.q4||'—'),M,y);
+  pdf.text('Date: '+clean(ans.q1||dateStr)+'   DO: '+clean(ans.q4||'--'),M,y);
   y+=5; pdf.setDrawColor(220,220,228); pdf.line(M,y,M+cW,y); y+=3;
 
   // Answers
@@ -1922,20 +1922,20 @@ function genPDF(sub) {
   // Virtual labels for dynamic Passenger Flow and Gate Screening fields
   // These are not in allQuestions but ARE saved in formAnswers
   const virtualLabels = {
-    'q8_from':'Check-in Zone — obs. from','q8_to':'Check-in Zone — obs. to',
-    'q8a':'Check-in Zone — counters in operation','q8b':'Check-in Zone — waiting time','q8c':'Check-in Zone — PAX volume (Xovis)',
-    'q9_from':'Emigration — obs. from','q9_to':'Emigration — obs. to',
-    'q9a':'Emigration — desks in operation','q9b':'Emigration — waiting time','q9c':'Emigration — PAX volume (Xovis)','q9d':'Emigration — reason if not fully staffed',
-    'q10_from':'Arr. Immigration — obs. from','q10_to':'Arr. Immigration — obs. to',
-    'q10a':'Arr. Immigration — desks in operation','q10b':'Arr. Immigration — waiting time','q10c':'Arr. Immigration — PAX volume (Xovis)','q10d':'Arr. Immigration — reason if not fully staffed',
-    'q11_from':'Arr. Customs — obs. from','q11_to':'Arr. Customs — obs. to',
-    'q11a':'Arr. Customs — X-rays in operation','q11b':'Arr. Customs — waiting time','q11c':'Arr. Customs — PAX volume (Xovis)','q11d':'Arr. Customs — reason if not at full capacity',
-    'q16_from':'G6-26 — obs. from','q16_to':'G6-26 — obs. to','q16p':'G6-26 — PAX volume (Xovis)',
-    'q16a':'G6-26 — waiting time','q16':'G6-26 — X-rays in operation','q17':'G6-26 — reason if not at full capacity','q15c':'G6-26 — timing standards met?',
-    'q18_from':'G1-3 — obs. from','q18_to':'G1-3 — obs. to','q18p':'G1-3 — PAX volume (Xovis)',
-    'q18a':'G1-3 — waiting time','q19':'G1-3 — X-rays in operation','q20':'G1-3 — reason if not at full capacity','q18b':'G1-3 — timing standards met?',
-    'q21_from':'G4-5 — obs. from','q21_to':'G4-5 — obs. to','q21p':'G4-5 — PAX volume (Xovis)',
-    'q21a':'G4-5 — waiting time','q22':'G4-5 — X-rays in operation','q23':'G4-5 — reason if not at full capacity','q21b':'G4-5 — timing standards met?'
+    'q8_from':'Check-in Zone -- obs. from','q8_to':'Check-in Zone -- obs. to',
+    'q8a':'Check-in Zone -- counters in operation','q8b':'Check-in Zone -- waiting time','q8c':'Check-in Zone -- PAX volume (Xovis)',
+    'q9_from':'Emigration -- obs. from','q9_to':'Emigration -- obs. to',
+    'q9a':'Emigration -- desks in operation','q9b':'Emigration -- waiting time','q9c':'Emigration -- PAX volume (Xovis)','q9d':'Emigration -- reason if not fully staffed',
+    'q10_from':'Arr. Immigration -- obs. from','q10_to':'Arr. Immigration -- obs. to',
+    'q10a':'Arr. Immigration -- desks in operation','q10b':'Arr. Immigration -- waiting time','q10c':'Arr. Immigration -- PAX volume (Xovis)','q10d':'Arr. Immigration -- reason if not fully staffed',
+    'q11_from':'Arr. Customs -- obs. from','q11_to':'Arr. Customs -- obs. to',
+    'q11a':'Arr. Customs -- X-rays in operation','q11b':'Arr. Customs -- waiting time','q11c':'Arr. Customs -- PAX volume (Xovis)','q11d':'Arr. Customs -- reason if not at full capacity',
+    'q16_from':'G6-26 -- obs. from','q16_to':'G6-26 -- obs. to','q16p':'G6-26 -- PAX volume (Xovis)',
+    'q16a':'G6-26 -- waiting time','q16':'G6-26 -- X-rays in operation','q17':'G6-26 -- reason if not at full capacity','q15c':'G6-26 -- timing standards met?',
+    'q18_from':'G1-3 -- obs. from','q18_to':'G1-3 -- obs. to','q18p':'G1-3 -- PAX volume (Xovis)',
+    'q18a':'G1-3 -- waiting time','q19':'G1-3 -- X-rays in operation','q20':'G1-3 -- reason if not at full capacity','q18b':'G1-3 -- timing standards met?',
+    'q21_from':'G4-5 -- obs. from','q21_to':'G4-5 -- obs. to','q21p':'G4-5 -- PAX volume (Xovis)',
+    'q21a':'G4-5 -- waiting time','q22':'G4-5 -- X-rays in operation','q23':'G4-5 -- reason if not at full capacity','q21b':'G4-5 -- timing standards met?'
   };
 
   // Build virtual section groups for Passenger Flow and Gate Screening
@@ -1948,7 +1948,7 @@ function genPDF(sub) {
     if (!smap[q.section]) { smap[q.section]={label:q.section,questions:[]}; secs.push(smap[q.section]); }
     smap[q.section].questions.push(q);
   });
-  const vcols={'Yes':[39,174,96],'No':[192,57,43],'Normal Operations':[39,174,96],'Minor Issues':[230,126,34],'Major Disruption':[192,57,43],'Escalated':[41,128,185],'Observed — no issues':[39,174,96],'Observed — issues noted':[192,57,43],'Yes — all operational':[39,174,96],'No — fault raised to CNS / SAA IT':[192,57,43],'Yes — sufficient':[39,174,96],'Replenishment needed — CSP informed to expedite':[230,126,34],'Stable — physically monitored':[39,174,96],'Issues observed and logged':[192,57,43]};
+  const vcols={'Yes':[39,174,96],'No':[192,57,43],'Normal Operations':[39,174,96],'Minor Issues':[230,126,34],'Major Disruption':[192,57,43],'Escalated':[41,128,185],'Observed -- no issues':[39,174,96],'Observed -- issues noted':[192,57,43],'Yes -- all operational':[39,174,96],'No -- fault raised to CNS / SAA IT':[192,57,43],'Yes -- sufficient':[39,174,96],'Replenishment needed -- CSP informed to expedite':[230,126,34],'Stable -- physically monitored':[39,174,96],'Issues observed and logged':[192,57,43]};
   const RH=5.2;
 
   // Inject virtual sections into secs list if not already there
@@ -2029,24 +2029,24 @@ function genPDF(sub) {
   pdf.save(fname);
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // PAST SHIFTS
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function loadPast() {
   const el=document.getElementById('past-list');
   el.innerHTML='<div class="loading"><div class="spin"></div>Loading...</div>';
   allQuestions=await dbAll('questions');
   const subs=await dbAll('submissions');
   subs.sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
-  if(!subs.length){el.innerHTML='<div class="empty">📋 No shift reports yet.</div>';return;}
+  if(!subs.length){el.innerHTML='<div class="empty">? No shift reports yet.</div>';return;}
   const bc={'Normal Operations':'b-normal','Minor Issues':'b-minor','Major Disruption':'b-major','Escalated':'b-esc'};
   el.innerHTML='<div class="shifts-grid">'+subs.map(s=>{
     const d=new Date(s.submittedAt);
     const cls=bc[s.overallStatus]||'b-normal';
     return`<div class="shift-card">
       <div>
-        <div class="shift-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} — ${s.answers?.q2||'Shift'}</div>
-        <div class="shift-meta">${s.staffName} · ${s.staffId} · ${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="shift-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} -- ${s.answers?.q2||'Shift'}</div>
+        <div class="shift-meta">${s.staffName} ? ${s.staffId} ? ${d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>
       </div>
       <div class="shift-right">
         <span class="shift-badge ${cls}">${s.overallStatus||'Normal'}</span>
@@ -2057,9 +2057,9 @@ async function loadPast() {
 }
 function rePDF(sub){genPDF(sub);}
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // MONTHLY REPORT
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function genMonthlyReport(){
   const month=parseInt(document.getElementById('rep-month').value);
   const year=parseInt(document.getElementById('rep-year').value);
@@ -2091,12 +2091,12 @@ async function genMonthlyReport(){
       // Background bar
       pdf.setFillColor(235,235,240);
       pdf.rect(M+labelW, by, barW, bh, 'F');
-      // Filled bar — cap at barW so it never overflows
+      // Filled bar -- cap at barW so it never overflows
       const ratio = (maxV>0&&vals[i]>0) ? Math.min(vals[i]/maxV, 1) : 0;
       const fw = ratio * barW;
       pdf.setFillColor(...col);
       pdf.rect(M+labelW, by, fw, bh, 'F');
-      // Value label — always printed at fixed right position
+      // Value label -- always printed at fixed right position
       pdf.setFontSize(6);pdf.setFont('helvetica','bold');pdf.setTextColor(50,50,65);
       pdf.text(String(vals[i]), M+labelW+barW+2, by+bh/2+1.5);
     });
@@ -2158,13 +2158,13 @@ async function genMonthlyReport(){
   const aPX=areas.map(a=>avg(subs.map(s=>pxN(s.answers?.[a.pq])).filter(v=>v>0)));
   const aCT=areas.map(a=>avg(subs.map(s=>parseInt(s.answers?.[a.cq])||0).filter(v=>v>0)));
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow — Avg Waiting Time (min)',[39,120,96]);
+  secHdr('Passenger Flow -- Avg Waiting Time (min)',[39,120,96]);
   y=bar(areas.map(a=>a.l),aWT,25,y,8,[230,126,34]);
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow — Avg PAX Volume',[80,60,160]);
+  secHdr('Passenger Flow -- Avg PAX Volume',[80,60,160]);
   y=bar(areas.map(a=>a.l),aPX,500,y,8,[85,136,238]);
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow — Avg Desks/Counters',[60,100,80]);
+  secHdr('Passenger Flow -- Avg Desks/Counters',[60,100,80]);
   y=bar(areas.map(a=>a.l),aCT,100,y,8,[76,175,130]);
   // Gates
   const gates=[{l:'G6-26',wq:'q16a',pq:'q16p',xq:'q16'},{l:'G1-3',wq:'q18a',pq:'q18p',xq:'q19'},{l:'G4-5',wq:'q21a',pq:'q21p',xq:'q22'}];
@@ -2172,17 +2172,17 @@ async function genMonthlyReport(){
   const gPX=gates.map(g=>avg(subs.map(s=>pxN(s.answers?.[g.pq])).filter(v=>v>0)));
   const gXR=gates.map(g=>avg(subs.map(s=>parseInt(s.answers?.[g.xq])||0).filter(v=>v>0)));
   if(y>200){pdf.addPage();y=M;}else y+=6;
-  secHdr('Gate Screening — Avg Waiting Time (min)',[160,100,30]);
+  secHdr('Gate Screening -- Avg Waiting Time (min)',[160,100,30]);
   y=bar(gates.map(g=>g.l),gWT,25,y,8,[230,126,34]);
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Gate Screening — Avg X-Rays in Operation',[120,60,30]);
+  secHdr('Gate Screening -- Avg X-Rays in Operation',[120,60,30]);
   y=bar(gates.map(g=>g.l),gXR,5,y,8,[232,197,71]);
   if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Gate Screening — Avg PAX Volume',[80,40,120]);
+  secHdr('Gate Screening -- Avg PAX Volume',[80,40,120]);
   y=bar(gates.map(g=>g.l),gPX,500,y,8,[85,136,238]);
   // Submissions list
   if(y>220){pdf.addPage();y=M;}else y+=6;
-  secHdr('Submissions — '+mName+' '+year,[40,40,60]);
+  secHdr('Submissions -- '+mName+' '+year,[40,40,60]);
   pdf.setFontSize(6.5);pdf.setFont('helvetica','bold');pdf.setTextColor(100,100,110);
   pdf.text('Date',M+2,y);pdf.text('Shift',M+30,y);pdf.text('Officer',M+60,y);pdf.text('Status',M+105,y);y+=5;
   subs.forEach(s=>{
@@ -2192,10 +2192,10 @@ async function genMonthlyReport(){
     pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(60,60,75);
     pdf.text(sc(d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})),M+2,y+4);
     pdf.text(sc((s.answers?.q2||'').substring(0,18)),M+30,y+4);
-    pdf.text(sc(s.staffName||'—'),M+60,y+4);
+    pdf.text(sc(s.staffName||'--'),M+60,y+4);
     const vc={'Normal Operations':[39,174,96],'Minor Issues':[230,126,34],'Major Disruption':[192,57,43],'Escalated':[41,128,185]}[s.overallStatus]||[100,100,110];
     pdf.setTextColor(...vc);pdf.setFont('helvetica','bold');
-    pdf.text(sc(s.overallStatus||'—'),M+105,y+4);
+    pdf.text(sc(s.overallStatus||'--'),M+105,y+4);
     y+=7;
   });
   const tp=pdf.internal.getNumberOfPages();
@@ -2207,12 +2207,12 @@ async function genMonthlyReport(){
     pdf.text('Page '+p+'/'+tp,W-M,298,{align:'right'});
   }
   pdf.save('Monthly-Report-'+mName+'-'+year+'.pdf');
-  prev.innerHTML=`<div class="empty" style="color:var(--green)">✓ Report for ${mName} ${year} downloaded — ${subs.length} shifts included.</div>`;
+  prev.innerHTML=`<div class="empty" style="color:var(--green)">? Report for ${mName} ${year} downloaded -- ${subs.length} shifts included.</div>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // ADMIN
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 async function doAdminLogin(){
   const sid=document.getElementById('adm-staff').value.trim().toUpperCase();
   const pass=document.getElementById('adm-pass').value;
@@ -2287,12 +2287,12 @@ async function renderSections(){
   const PROT=['Passenger Flow','Gate Screening'];
   document.getElementById('tab-sections').innerHTML=`<div class="a-sec">
     <div class="a-sec-title">Sections (${allSections.length})</div>
-    <div class="warn-box">⚠ Sections marked Protected have a custom card layout. Rename with caution.</div>
+    <div class="warn-box">? Sections marked Protected have a custom card layout. Rename with caution.</div>
     ${allSections.map((s,i)=>`<div class="item-row">
       <div><div class="item-name">${i+1}. ${s.label} ${PROT.includes(s.label)?'<span class="badge-prot">Protected</span>':''}</div><div class="item-meta">${s.sub||'No description'}</div></div>
       <div class="item-right">
-        <button class="ord-btn" onclick="moveUp('${s.id}')" ${i===0?'disabled':''}>▲</button>
-        <button class="ord-btn" onclick="moveDown('${s.id}')" ${i===allSections.length-1?'disabled':''}>▼</button>
+        <button class="ord-btn" onclick="moveUp('${s.id}')" ${i===0?'disabled':''}>?</button>
+        <button class="ord-btn" onclick="moveDown('${s.id}')" ${i===allSections.length-1?'disabled':''}>?</button>
         <button class="btn-sm btn-info" onclick='editSection(${JSON.stringify(s).replace(/'/g,"&#39;")})'>Edit</button>
         ${!PROT.includes(s.label)?`<button class="btn-sm btn-danger" onclick="delSection('${s.id}','${s.label}')">Delete</button>`:''}
       </div>
@@ -2361,7 +2361,7 @@ async function renderQuestions(){
     ${allQuestions.map(q=>`<div class="q-item">
       <div class="q-sec">${q.section}</div>
       <div class="q-text">${q.label}</div>
-      <div class="q-type">Type: ${q.type} · ${q.required?'Required':'Optional'}</div>
+      <div class="q-type">Type: ${q.type} ? ${q.required?'Required':'Optional'}</div>
       <div class="q-btns">
         <button class="btn-sm btn-info" onclick='editQ(${JSON.stringify(q).replace(/'/g,"&#39;")})'>Edit</button>
         <button class="btn-sm btn-danger" onclick="delQ('${q.id}')">Delete</button>
@@ -2421,8 +2421,8 @@ async function renderSubmissions(){
     ${subs.length?'<div class="shifts-grid">'+subs.map(s=>{
       const d=new Date(s.submittedAt);const cls=bc[s.overallStatus]||'b-normal';
       return`<div class="shift-card">
-        <div><div class="shift-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} — ${s.answers?.q2||''}</div>
-        <div class="shift-meta">${s.staffName} · ${s.staffId}</div></div>
+        <div><div class="shift-date">${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} -- ${s.answers?.q2||''}</div>
+        <div class="shift-meta">${s.staffName} ? ${s.staffId}</div></div>
         <div class="shift-right">
           <span class="shift-badge ${cls}">${s.overallStatus||'Normal'}</span>
           <button class="btn-dl" onclick='rePDF(${JSON.stringify(s).replace(/'/g,"&#39;")})'>PDF</button>
@@ -2434,9 +2434,9 @@ async function renderSubmissions(){
 }
 async function delSub(id){if(!confirm('Delete?'))return;await dbDel('submissions',id);showToast('Deleted.','ok');renderSubmissions();}
 
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 // MODAL & TOAST
-// ═══════════════════════════════════════════════════════════════════
+// -----------------------------------------------
 function openModal(html){document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-overlay').classList.add('open');}
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
 document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
