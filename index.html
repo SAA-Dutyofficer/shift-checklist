@@ -693,52 +693,100 @@ function buildBranchDropdown(id, opts, lbl) {
 }
 
 function buildPassengerFlow(qs, idx, sec) {
-  const noteQ = qs.find(q => q.label === 'Section notes');
-  const total = allSections.length;
-  return `<div class="sec-wrap active">
-    <div class="sec-header">
-      <div class="sec-num">Section ${idx+1} of ${total}</div>
-      <div class="sec-title">${sec.label}</div>
-      <div class="sec-sub">${sec.sub||''}</div>
-    </div>
-    <div class="flow-grid">
-      <div class="flow-card">
-        <div class="flow-card-title">Check-in Zone</div>
-        ${buildTimeRange('q8_from','q8_to')}
-        ${buildDropdown('q8a', COUNTER_OPTS, 'Counters in operation')}
-        ${buildDropdown('q8b', WT_OPTS, 'Waiting time')}
-        ${buildDropdown('q8c', PAX_OPTS, 'PAX volume (Xovis)')}
-      </div>
-      <div class="flow-card">
-        <div class="flow-card-title">Emigration</div>
-        ${buildTimeRange('q9_from','q9_to')}
-        ${buildDropdown('q9a', COUNTER_OPTS, 'Desks in operation')}
-        ${buildDropdown('q9b', WT_OPTS, 'Waiting time')}
-        ${buildDropdown('q9c', PAX_OPTS, 'PAX volume (Xovis)')}
-        ${buildBranchDropdown('q9d', STAFF_REASONS, 'Reason if not fully staffed')}
-      </div>
-      <div class="flow-card">
-        <div class="flow-card-title">Arrivals Immigration</div>
-        ${buildTimeRange('q10_from','q10_to')}
-        ${buildDropdown('q10a', COUNTER_OPTS, 'Desks in operation')}
-        ${buildDropdown('q10b', WT_OPTS, 'Waiting time')}
-        ${buildDropdown('q10c', PAX_OPTS, 'PAX volume (Xovis)')}
-        ${buildBranchDropdown('q10d', STAFF_REASONS, 'Reason if not fully staffed')}
-      </div>
-      <div class="flow-card">
-        <div class="flow-card-title">Arrivals Customs</div>
-        ${buildTimeRange('q11_from','q11_to')}
-        ${buildDropdown('q11a', ['1','2','3'], 'X-ray machines in operation')}
-        ${buildDropdown('q11b', WT_OPTS, 'Waiting time')}
-        ${buildDropdown('q11c', PAX_OPTS, 'PAX volume (Xovis)')}
-        ${buildBranchDropdown('q11d', STAFF_REASONS, 'Reason if not at full capacity')}
-      </div>
-    </div>
-    ${noteQ ? renderNotes(noteQ) : ''}
-    ${renderFooter(idx, total)}
-  </div>`;
-}
+  var noteQ = qs.find(function(q){ return q.label === 'Section notes'; });
+  var total = allSections.length;
+  var zones = ['A','B','C','D','E'];
 
+  function mkTR(fromId, toId){
+    var fv = formAnswers[fromId]||'';
+    var tv = formAnswers[toId]||'';
+    var fo = HHMM_OPTS.map(function(o){ return '<option value="'+o+'"'+(fv===o?' selected':'')+'>'+o.slice(0,2)+':'+o.slice(2)+'</option>'; }).join('');
+    var to2 = HHMM_OPTS.map(function(o){ return '<option value="'+o+'"'+(tv===o?' selected':'')+'>'+o.slice(0,2)+':'+o.slice(2)+'</option>'; }).join('');
+    return '<div class="time-range">'
+      +'<div><div class="mini-lbl">From</div>'
+      +'<select class="f-inp" style="font-size:11px" onchange="saveAns(''+fromId+'',this.value)">'
+      +'<option value="">--:--</option>'+fo+'</select></div>'
+      +'<div class="time-arrow">to</div>'
+      +'<div><div class="mini-lbl">To</div>'
+      +'<select class="f-inp" style="font-size:11px" onchange="saveAns(''+toId+'',this.value)">'
+      +'<option value="">--:--</option>'+to2+'</select></div>'
+      +'</div>';
+  }
+
+  function mkDD(id, opts, lbl){
+    var v = formAnswers[id]||'';
+    var oh = opts.map(function(o){ return '<option value="'+o+'"'+(v===o?' selected':'')+'>'+o+'</option>'; }).join('');
+    return '<div style="margin-bottom:8px">'
+      +'<div class="mini-lbl">'+lbl+'</div>'
+      +'<select class="f-inp" style="font-size:11px" onchange="saveAns(''+id+'',this.value)">'
+      +'<option value="">Select</option>'+oh+'</select></div>';
+  }
+
+  function mkReason(id, opts){
+    var v = formAnswers[id]||'';
+    var oh = opts.map(function(o){ return '<option value="'+o+'"'+(v===o?' selected':'')+'>'+o+'</option>'; }).join('');
+    return '<div class="branch-box">'
+      +'<div class="branch-lbl">Reason if not fully staffed / at capacity</div>'
+      +'<select class="f-inp" style="font-size:11px;background:var(--bg3)" onchange="saveAns(''+id+'',this.value)">'
+      +'<option value="">Select reason</option>'+oh+'</select></div>';
+  }
+
+  var gl = 'font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)';
+
+  var zoneHtml = '';
+  zones.forEach(function(z){
+    zoneHtml += '<div class="flow-card">'
+      +'<div class="flow-card-title">Check-in Zone '+z+'</div>'
+      +mkTR('q8'+z+'_from','q8'+z+'_to')
+      +mkDD('q8'+z+'a', COUNTER_OPTS, 'Counters in operation')
+      +mkDD('q8'+z+'b', WT_OPTS, 'Waiting time')
+      +mkDD('q8'+z+'c', PAX_OPTS, 'PAX volume (Xovis)')
+      +'</div>';
+  });
+
+  var emigHtml = '<div class="flow-card">'
+    +'<div class="flow-card-title">Emigration</div>'
+    +mkTR('q9_from','q9_to')
+    +mkDD('q9a', COUNTER_OPTS, 'Desks in operation')
+    +mkDD('q9sg', COUNTER_OPTS, 'Smart Gates in operation')
+    +mkDD('q9b', WT_OPTS, 'Waiting time')
+    +mkDD('q9c', PAX_OPTS, 'PAX volume (Xovis)')
+    +mkReason('q9d', STAFF_REASONS)
+    +'</div>';
+
+  var immigHtml = '<div class="flow-card">'
+    +'<div class="flow-card-title">Arrivals Immigration</div>'
+    +mkTR('q10_from','q10_to')
+    +mkDD('q10a', COUNTER_OPTS, 'Desks in operation')
+    +mkDD('q10sg', COUNTER_OPTS, 'Smart Gates in operation')
+    +mkDD('q10b', WT_OPTS, 'Waiting time')
+    +mkDD('q10c', PAX_OPTS, 'PAX volume (Xovis)')
+    +mkReason('q10d', STAFF_REASONS)
+    +'</div>';
+
+  var customsHtml = '<div class="flow-card">'
+    +'<div class="flow-card-title">Arrivals Customs</div>'
+    +mkTR('q11_from','q11_to')
+    +mkDD('q11a', ['1','2','3'], 'X-ray machines in operation')
+    +mkDD('q11b', WT_OPTS, 'Waiting time')
+    +mkDD('q11c', PAX_OPTS, 'PAX volume (Xovis)')
+    +mkReason('q11d', STAFF_REASONS)
+    +'</div>';
+
+  return '<div class="sec-wrap active">'
+    +'<div class="sec-header">'
+    +'<div class="sec-num">Section '+(idx+1)+' of '+total+'</div>'
+    +'<div class="sec-title">'+sec.label+'</div>'
+    +'<div class="sec-sub">'+(sec.sub||'')+'</div>'
+    +'</div>'
+    +'<div style="'+gl+'">Check-in Zones</div>'
+    +'<div class="flow-grid" style="grid-template-columns:repeat(5,1fr)">'+zoneHtml+'</div>'
+    +'<div style="'+gl+';margin-top:14px">Immigration &amp; Customs</div>'
+    +'<div class="flow-grid" style="grid-template-columns:repeat(3,1fr)">'+emigHtml+immigHtml+customsHtml+'</div>'
+    +(noteQ ? renderNotes(noteQ) : '')
+    +renderFooter(idx, total)
+    +'</div>';
+}
 function buildGateScreening(qs, idx, sec) {
   const gates = [
     {name:'G6-26', fromQ:'q16_from', toQ:'q16_to', paxQ:'q16p', wtQ:'q16a', xrayQ:'q16', reasonQ:'q17', timingQ:'q15c', opts:['1','2','3','4','5']},
