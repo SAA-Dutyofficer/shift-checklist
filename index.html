@@ -954,7 +954,7 @@ async function clearDraft(){
   try { await dbDel('drafts', currentUser.staffId); } catch(e){}
 }
 
-let draftTimer = null;
+
 function autoDraft(){
   clearTimeout(draftTimer);
   draftTimer = setTimeout(function(){
@@ -1861,7 +1861,7 @@ function togStatus(el, id, val, cls) {
 // 
 // SUBMIT
 // 
-let draftTimer = null;
+
 function autoDraft(){
   clearTimeout(draftTimer);
   draftTimer = setTimeout(function(){
