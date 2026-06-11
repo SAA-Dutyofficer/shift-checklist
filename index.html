@@ -449,7 +449,16 @@ const DEFAULT_QUESTIONS = [
   {id:'qbh6',section:'Baggage Hall',  label:'Any issues with Arrivals Duty Free?',type:'yesno',required:true},
   {id:'qbhn',section:'Baggage Hall',  label:'Section notes',type:'textarea',required:false},
   // S6 -- Kerb & Trolleys
-  {id:'q24', section:'Kerb & Trolleys',label:'Departure kerb -- Porter availability adequate?',type:'yesno',required:true},
+  // S5 -- Baggage Hall
+  {id:'qbh1',section:'Baggage Hall',  label:'Number of baggage belts in operation',type:'choice',options:['1','2','3','4','5','6'],required:true},
+  {id:'qbh2',section:'Baggage Hall',  label:'Baggage belts operating without disruptions?',type:'yesno',required:true},
+  {id:'qbh3',section:'Baggage Hall',  label:'Trolleys available in baggage hall?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true},
+  {id:'qbh4',section:'Baggage Hall',  label:'Any issues with Lost & Found (L&F)?',type:'yesno',required:true},
+  {id:'qbh5',section:'Baggage Hall',  label:'Any issues with Vets / MOHAP (personal medications)?',type:'yesno',required:true},
+  {id:'qbh6',section:'Baggage Hall',  label:'Any issues with Arrivals Duty Free?',type:'yesno',required:true},
+  {id:'qbhn',section:'Baggage Hall',  label:'Section notes',type:'textarea',required:false},
+  // S6 -- Kerb & Trolleys
+  {id:'q24',label:'Departure kerb -- Porter availability adequate?',type:'yesno',required:true},
   {id:'q25', section:'Kerb & Trolleys',label:'Departure kerb -- Trolley stands adequately stocked?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true},
   {id:'q26', section:'Kerb & Trolleys',label:'Arrivals area -- Trolley availability adequate?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true},
   {id:'q26n',section:'Kerb & Trolleys',label:'Section notes',type:'textarea',required:false},
@@ -826,20 +835,6 @@ function buildBaggageHall(qs, idx, sec){
   </div>`;
 }
 
-
-
-function buildBaggageHall(qs, idx, sec) {
-  var noteQ = qs.find(function(q){ return q.label === 'Section notes'; });
-  var mainQs = qs.filter(function(q){ return q.label !== 'Section notes'; });
-  var total = allSections.length;
-  return '<div class="sec-wrap active"><div class="sec-header">'
-    +'<div class="sec-num">Section '+(idx+1)+' of '+total+'</div>'
-    +'<div class="sec-title">'+sec.label+'</div>'
-    +'<div class="sec-sub">'+(sec.sub||'')+'</div></div>'
-    +mainQs.map(function(q){ return renderQ(q); }).join('')
-    +(noteQ ? renderNotes(noteQ) : '')
-    +renderFooter(idx,total)+'</div>';
-}
 
 
 function renderNotes(q) {
@@ -1622,9 +1617,6 @@ function showToast(msg,type='ok'){
   t.textContent=msg;t.className='toast '+type+' show';
   clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3500);
 }
-</script>
-</body>
-</html>
 function buildGateScreening(qs, idx, sec) {
   const gates = [
     {name:'G6-26', fromQ:'q16_from', toQ:'q16_to', paxQ:'q16p', wtQ:'q16a', xrayQ:'q16', reasonQ:'q17', timingQ:'q15c', opts:['1','2','3','4','5']},
@@ -1682,20 +1674,6 @@ function buildGateScreening(qs, idx, sec) {
     ${renderFooter(idx, total)}
   </div>`;
 }
-
-function buildBaggageHall(qs, idx, sec) {
-  var noteQ = qs.find(function(q){ return q.label === 'Section notes'; });
-  var mainQs = qs.filter(function(q){ return q.label !== 'Section notes'; });
-  var total = allSections.length;
-  return '<div class="sec-wrap active"><div class="sec-header">'
-    +'<div class="sec-num">Section '+(idx+1)+' of '+total+'</div>'
-    +'<div class="sec-title">'+sec.label+'</div>'
-    +'<div class="sec-sub">'+(sec.sub||'')+'</div></div>'
-    +mainQs.map(function(q){ return renderQ(q); }).join('')
-    +(noteQ ? renderNotes(noteQ) : '')
-    +renderFooter(idx,total)+'</div>';
-}
-
 
 function renderNotes(q) {
   const v = formAnswers[q.id]||'';
