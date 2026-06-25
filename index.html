@@ -747,7 +747,7 @@ function buildPassengerFlow(qs, idx, sec) {
     +'<div class="sec-num">Section '+(idx+1)+' of '+total+'</div>'
     +'<div class="sec-title">'+sec.label+'</div><div class="sec-sub">'+(sec.sub||'')+'</div></div>'
     +'<div style="'+gl+'">Check-in Zones</div>'
-    +'<div class="flow-grid" style="grid-template-columns:repeat(5,1fr)">'+zh+'</div>'
+    +'<div class="flow-grid" style="grid-template-columns:repeat(3,1fr)">'+zh+'</div>'
     +'<div style="'+gl+';margin-top:14px">Immigration and Customs</div>'
     +'<div class="flow-grid" style="grid-template-columns:repeat(3,1fr)">'+eh+ih+ch2+'</div>'
     +(noteQ ? renderNotes(noteQ) : '')+renderFooter(idx,total)+'</div>';
