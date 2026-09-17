@@ -1564,12 +1564,86 @@ async function moveDown(id){
 }
 
 // Questions
+async function reseedAll(){
+  if(!confirm('This will DELETE all existing questions and sections from Firebase and reseed from the HTML. Continue?')) return;
+  showToast('Reseeding...','ok');
+  const SECTIONS = [
+    {id:'s1',label:'DO Details',sub:'Shift identification and officer on duty',order:1},
+    {id:'s2',label:'Ops Management',sub:'Stakeholder monitoring and terminal status',order:2},
+    {id:'s3',label:'Passenger Flow',sub:'Check-in zones, emigration, immigration and customs',order:3},
+    {id:'s4',label:'Gate Screening',sub:'MOU compliance, X-ray utilisation and waiting times per gate',order:4},
+    {id:'s5',label:'Baggage Hall',sub:'Belt operations, trolleys and arrivals services',order:5},
+    {id:'s6',label:'Kerb & Trolleys',sub:'Drop-off kerb, porter and trolley status',order:6},
+    {id:'s7',label:'Ops Reporting',sub:'Systems, ramp and incident status',order:7},
+    {id:'s8',label:'SAS Checks',sub:'Monitoring report submissions',order:8},
+    {id:'s9',label:'Shift Closure',sub:'Overall classification and handover summary',order:9}
+  ];
+  const QUESTIONS = [
+    {id:'q1',section:'DO Details',label:'Shift date',type:'date',required:true,order:1},
+    {id:'q2',section:'DO Details',label:'Shift period',type:'choice',options:['Morning  06:00 - 14:00','Afternoon  14:00 - 22:00','Night  22:00 - 06:00'],required:true,order:2},
+    {id:'q4',section:'DO Details',label:'Duty Officer full name and staff number',type:'text',required:true,order:4},
+    {id:'q4n',section:'DO Details',label:'Section notes',type:'textarea',required:false,order:5},
+    {id:'q5',section:'Ops Management',label:'SAS and Cargo operations observed this shift -- any issues noted?',type:'choice',options:['Observed -- no issues','Observed -- issues noted','Not observed this shift'],required:true,order:5},
+    {id:'q6',section:'Ops Management',label:'Police and SSP presence at drop-off area adequate and managing vehicle traffic effectively?',type:'yesno',required:true,order:6},
+    {id:'q7',section:'Ops Management',label:'Arrival car park or drop-off area diversion activated this shift?',type:'yesno',required:true,order:7},
+    {id:'q7n',section:'Ops Management',label:'Section notes',type:'textarea',required:false,order:8},
+    {id:'q14n',section:'Passenger Flow',label:'Section notes',type:'textarea',required:false,order:14},
+    {id:'q15',section:'Gate Screening',label:'Police checkpoint staffing at 75% as required under MOU Section 7?',type:'yesno',required:true,order:15},
+    {id:'q15b',section:'Gate Screening',label:'During peak periods, police checkpoint staffing at 100% per MOU Section 7?',type:'yesno',required:true,order:16},
+    {id:'q23n',section:'Gate Screening',label:'Section notes',type:'textarea',required:false,order:23},
+    {id:'qbh1',section:'Baggage Hall',label:'Number of baggage belts in operation',type:'choice',options:['1','2','3','4','5','6'],required:true,order:30},
+    {id:'qbh2',section:'Baggage Hall',label:'Baggage belts operating without disruptions?',type:'yesno',required:true,order:31},
+    {id:'qbh3',section:'Baggage Hall',label:'Trolleys available in baggage hall?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true,order:32},
+    {id:'qbh4',section:'Baggage Hall',label:'Any issues with Lost & Found (L&F)?',type:'yesno',required:true,order:33},
+    {id:'qbh5',section:'Baggage Hall',label:'Any issues with Vets / MOHAP (personal medications)?',type:'yesno',required:true,order:34},
+    {id:'qbh6',section:'Baggage Hall',label:'Any issues with Arrivals Duty Free?',type:'yesno',required:true,order:35},
+    {id:'qbhn',section:'Baggage Hall',label:'Section notes',type:'textarea',required:false,order:36},
+    {id:'q24',section:'Kerb & Trolleys',label:'Departure kerb -- Porter availability adequate?',type:'yesno',required:true,order:24},
+    {id:'q25',section:'Kerb & Trolleys',label:'Departure kerb -- Trolley stands adequately stocked?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true,order:25},
+    {id:'q26',section:'Kerb & Trolleys',label:'Arrivals area -- Trolley availability adequate?',type:'choice',options:['Yes -- sufficient','Replenishment needed -- CSP informed to expedite'],required:true,order:26},
+    {id:'q26n',section:'Kerb & Trolleys',label:'Section notes',type:'textarea',required:false,order:27},
+    {id:'q27',section:'Ops Reporting',label:'All critical systems operational? (FIDS, X-ray, Smart Gates, Immigration counters, lighting)',type:'choice',options:['Yes -- all operational','No -- fault raised to CNS / SAA IT'],required:true,order:27},
+    {id:'q29',section:'Ops Reporting',label:'SAS Porters available for passenger assistance and belt management?',type:'yesno',required:true,order:29},
+    {id:'q30',section:'Ops Reporting',label:'Number of arrival baggage belts staffed by Customs during peak',type:'choice',options:['4 belts','5 belts','6 belts'],required:true,order:30},
+    {id:'q31',section:'Ops Reporting',label:'Ramp and cargo operations status this shift',type:'choice',options:['Stable -- physically monitored','Stable -- remotely confirmed via Ops Manager','Issues observed and logged'],required:true,order:31},
+    {id:'q32',section:'Ops Reporting',label:'Contractor compliance checks completed with no major irregularities?',type:'yesno',required:true,order:32},
+    {id:'q33',section:'Ops Reporting',label:'Any disruptions, system failures or emergency situations during this shift?',type:'yesno',required:true,order:33},
+    {id:'q34',section:'Ops Reporting',label:'Management escalation required at any point this shift?',type:'yesno',required:true,order:34},
+    {id:'q34n',section:'Ops Reporting',label:'Section notes',type:'textarea',required:false,order:35},
+    {id:'q35',section:'SAS Checks',label:'BCT/BTR bag handling monitoring report submitted for this shift?',type:'yesno',required:false,order:35},
+    {id:'q36',section:'SAS Checks',label:'Departure PAX bus transport report submitted for this shift?',type:'yesno',required:true,order:36},
+    {id:'q37a',section:'SAS Checks',label:'SAS Baggage Tracking completed this shift?',type:'yesno',required:false,order:37},
+    {id:'q37b',section:'SAS Checks',label:'Which destination(s) were tracked? (Select all that apply)',type:'multicheck',options:['Turkey','GCC','Thailand'],required:false,dependsOn:{id:'q37a',val:'Yes'},order:38},
+    {id:'qsbd',section:'SAS Checks',label:'SBD Machine Check -- Counters 29, 30, 31, 32, 33 (every 2 hours)',type:'sbd',required:false,order:39},
+    {id:'q36n',section:'SAS Checks',label:'Section notes',type:'textarea',required:false,order:40},
+    {id:'q37',section:'Shift Closure',label:'Overall shift classification',type:'status',options:['Normal Operations','Minor Issues','Major Disruption','Escalated'],required:true,order:37},
+    {id:'q38',section:'Shift Closure',label:'End of shift summary -- key events, decisions and handover notes for the incoming officer',type:'textarea',required:true,order:38},
+    {id:'q39',section:'Shift Closure',label:'Outstanding items or follow-up actions to be logged in the Operational Planner',type:'textarea',required:false,order:39},
+    {id:'q39n',section:'Shift Closure',label:'Section notes',type:'textarea',required:false,order:40}
+  ];
+  try {
+    const oldQs = await dbAll('questions');
+    const oldSs = await dbAll('sections');
+    for(const q of oldQs) await dbDel('questions', q.id);
+    for(const s of oldSs) await dbDel('sections', s.id);
+    for(const s of SECTIONS) await dbSet('sections', s.id, s);
+    for(const q of QUESTIONS) await dbSet('questions', q.id, q);
+    showToast('Done -- ' + QUESTIONS.length + ' questions and ' + SECTIONS.length + ' sections reseeded.','ok');
+    await renderAll();
+  } catch(e2) {
+    showToast('Error: ' + e2.message,'err');
+  }
+}
+
 async function renderQuestions(){
   allQuestions=await dbAll('questions');
   allSections=await dbAll('sections');allSections.sort((a,b)=>(a.order||0)-(b.order||0));
   allQuestions.sort((a,b)=>a.id<b.id?-1:1);
   document.getElementById('tab-questions').innerHTML=`<div class="a-sec">
     <div class="a-sec-title">Questions (${allQuestions.length})</div>
+    <button onclick="seedNewQuestions()" style="margin-bottom:12px;padding:8px 16px;background:#D97706;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">+ Add New SAS Questions to Firebase</button>
+    <button onclick="reseedAll()" style="margin-bottom:12px;margin-left:8px;padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">&#9888; Reset &amp; Reseed ALL Questions</button>
+    <button onclick="reseedAll()" style="margin-bottom:12px;margin-left:8px;padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">&#9888; Reset & Reseed ALL Questions</button>
     ${allQuestions.map(q=>`<div class="q-item">
       <div class="q-sec">${q.section}</div>
       <div class="q-text">${q.label}</div>
