@@ -105,6 +105,8 @@ select.f-inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xml
 .tog:hover{color:var(--text);background:var(--bg4)}
 .tog.sel-yes{background:rgba(76,175,130,0.15);border-color:rgba(76,175,130,0.4);color:var(--green)}
 .tog.sel-no{background:rgba(224,85,85,0.15);border-color:rgba(224,85,85,0.4);color:var(--red)}
+.tog.sbd-green{background:#16a34a;color:#fff;border-color:#16a34a;font-weight:700}
+.tog.sbd-red{background:#dc2626;color:#fff;border-color:#dc2626;font-weight:700}
 .tog.sel-blue{background:rgba(85,136,238,0.15);border-color:rgba(85,136,238,0.4);color:var(--blue)}
 .tog.sel-amber{background:rgba(232,160,32,0.15);border-color:rgba(232,160,32,0.4);color:var(--amber)}
 .mini-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;margin-top:10px}.mini-lbl:first-child{margin-top:0}
@@ -465,6 +467,9 @@ const DEFAULT_QUESTIONS = [
   // S8 -- SAS Checks
   {id:'q35', section:'SAS Checks',    label:'BCT/BTR bag handling monitoring report submitted for this shift?',type:'yesno',required:false},
   {id:'q36', section:'SAS Checks',    label:'Departure PAX bus transport report submitted for this shift?',type:'yesno',required:true},
+  {id:'q37a',section:'SAS Checks',    label:'SAS Baggage Tracking completed this shift?',type:'yesno',required:false},
+  {id:'q37b',section:'SAS Checks',    label:'Which destination(s) were tracked? (Select all that apply)',type:'multicheck',options:['Turkey','GCC','Thailand'],required:false,dependsOn:{id:'q37a',val:'Yes'}},
+  {id:'qsbd',section:'SAS Checks',    label:'SBD Machine Check -- Counters 29, 30, 31, 32, 33 (every 2 hours)',type:'sbd',required:false},
   {id:'q36n',section:'SAS Checks',    label:'Section notes',type:'textarea',required:false},
   // S9 -- Shift Closure
   {id:'q37', section:'Shift Closure', label:'Overall shift classification',type:'status',options:['Normal Operations','Minor Issues','Major Disruption','Escalated'],required:true},
@@ -844,6 +849,57 @@ function renderQ(q) {
   if (q.type==='yesno') return `<div class="chk-row"><div class="chk-text">${q.label}${q.required?'<span class="req" style="margin-left:4px">*</span>':''}</div><div class="chk-togs"><span class="tog ${v==='Yes'?'sel-yes':''}" onclick="togYN(this,'${q.id}','Yes')">Yes</span><span class="tog ${v==='No'?'sel-no':''}" onclick="togYN(this,'${q.id}','No')">No</span></div></div>`;
   if (q.type==='choice') return `<div class="field"><div class="field-lbl">${q.label}${q.required?'<span class="req">*</span>':''}</div><div class="tog-group">${(q.options||[]).map(o=>`<span class="tog ${v===o?'sel-blue':''}" onclick="togChoice(this,'${q.id}','${o}')">${o}</span>`).join('')}</div></div>`;
   if (q.type==='status') return `<div class="field"><div class="field-lbl">${q.label}${q.required?'<span class="req">*</span>':''}</div><div class="status-grid">${(q.options||[]).map((o,i)=>{const cls=['s-normal','s-minor','s-major','s-esc'][i]||'';return`<div class="stat-btn ${v===o?cls:''}" onclick="togStatus(this,'${q.id}','${o}','${cls}')">${o}</div>`;}).join('')}</div></div>`;
+
+  // Multi-checkbox (e.g. destination tracking)
+  if (q.type==='multicheck') {
+    // Check dependency
+    if (q.dependsOn) {
+      const depVal = formAnswers[q.dependsOn.id]||'';
+      if (depVal !== q.dependsOn.val) return '';
+    }
+    const selected = v ? v.split(',') : [];
+    return '<div class="field" style="margin-top:8px"><div class="field-lbl">' + q.label + (q.required?'<span class="req">*</span>':'') + '</div>'
+      + '<div class="tog-group" style="flex-wrap:wrap;gap:8px">'
+      + (q.options||[]).map(o => '<span class="tog ' + (selected.includes(o)?'sel-blue':'') + '" onclick="togMulti(this,'' + q.id + '','' + o + '')">' + o + '</span>').join('')
+      + '</div></div>';
+  }
+
+  // SBD machine check (every 2 hours, counters 29-33)
+  if (q.type==='sbd') {
+    const sbdData = v ? JSON.parse(v) : {};
+    const times = ['06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00'];
+    const machines = [29,30,31,32,33];
+    let html = '<div class="field"><div class="field-lbl">' + q.label + '</div>';
+    html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+    // Header row
+    html += '<thead><tr><th style="padding:6px 8px;background:#F1F5F9;border:1px solid #E2E8F0;text-align:left;font-size:11px">Check Time</th>';
+    machines.forEach(m => { html += '<th style="padding:6px 8px;background:#F1F5F9;border:1px solid #E2E8F0;text-align:center;font-size:11px">Counter ' + m + '</th>'; });
+    html += '<th style="padding:6px 8px;background:#F1F5F9;border:1px solid #E2E8F0;text-align:center;font-size:11px">Done?</th></tr></thead><tbody>';
+    // Rows for each 2-hour check
+    times.forEach(t => {
+      const rowKey = 'sbd_' + t.replace(':','');
+      const rowData = sbdData[rowKey] || {};
+      html += '<tr>';
+      html += '<td style="padding:5px 8px;border:1px solid #E2E8F0;font-weight:600;white-space:nowrap">' + t + '</td>';
+      machines.forEach(m => {
+        const mKey = 'm' + m;
+        const mVal = rowData[mKey] || '';
+        html += '<td style="padding:4px;border:1px solid #E2E8F0;text-align:center">'
+          + '<span class="tog ' + (mVal==='G'?'sbd-green':'') + '" style="font-size:10px;padding:3px 7px;margin:1px" onclick="togSBD(this,'' + q.id + '','' + rowKey + '','' + mKey + '','G')">G</span>'
+          + '<span class="tog ' + (mVal==='R'?'sbd-red':'') + '" style="font-size:10px;padding:3px 7px;margin:1px" onclick="togSBD(this,'' + q.id + '','' + rowKey + '','' + mKey + '','R')">R</span>'
+          + '</td>';
+      });
+      const doneVal = rowData['done'] || '';
+      html += '<td style="padding:4px;border:1px solid #E2E8F0;text-align:center">'
+        + '<span class="tog ' + (doneVal==='Y'?'sel-yes':'') + '" style="font-size:10px;padding:3px 7px;margin:1px" onclick="togSBDdone(this,'' + q.id + '','' + rowKey + '','Y')">Yes</span>'
+        + '<span class="tog ' + (doneVal==='N'?'sel-no':'') + '" style="font-size:10px;padding:3px 7px;margin:1px" onclick="togSBDdone(this,'' + q.id + '','' + rowKey + '','N')">No</span>'
+        + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+    return html;
+  }
+
   return '';
 }
 
@@ -883,6 +939,41 @@ function togStatus(el, id, val, cls) {
   formAnswers[id] = val;
   el.parentElement.querySelectorAll('.stat-btn').forEach(t => t.classList.remove('s-normal','s-minor','s-major','s-esc'));
   el.classList.add(cls);
+  autoDraft();
+}
+function togMulti(el, id, val) {
+  let selected = formAnswers[id] ? formAnswers[id].split(',').filter(Boolean) : [];
+  if (selected.includes(val)) {
+    selected = selected.filter(s => s !== val);
+    el.classList.remove('sel-blue');
+  } else {
+    selected.push(val);
+    el.classList.add('sel-blue');
+  }
+  formAnswers[id] = selected.join(',');
+  autoDraft();
+}
+function togSBD(el, qid, rowKey, mKey, val) {
+  let sbdData = formAnswers[qid] ? JSON.parse(formAnswers[qid]) : {};
+  if (!sbdData[rowKey]) sbdData[rowKey] = {};
+  sbdData[rowKey][mKey] = sbdData[rowKey][mKey] === val ? '' : val;
+  formAnswers[qid] = JSON.stringify(sbdData);
+  // Update UI - find siblings in same cell
+  const cell = el.parentElement;
+  cell.querySelectorAll('.tog').forEach(t => {
+    t.classList.remove('sbd-green','sbd-red');
+  });
+  if (sbdData[rowKey][mKey]) el.classList.add(val === 'G' ? 'sbd-green' : 'sbd-red');
+  autoDraft();
+}
+function togSBDdone(el, qid, rowKey, val) {
+  let sbdData = formAnswers[qid] ? JSON.parse(formAnswers[qid]) : {};
+  if (!sbdData[rowKey]) sbdData[rowKey] = {};
+  sbdData[rowKey]['done'] = sbdData[rowKey]['done'] === val ? '' : val;
+  formAnswers[qid] = JSON.stringify(sbdData);
+  const cell = el.parentElement;
+  cell.querySelectorAll('.tog').forEach(t => t.classList.remove('sel-yes','sel-no'));
+  if (sbdData[rowKey]['done']) el.classList.add(val === 'Y' ? 'sel-yes' : 'sel-no');
   autoDraft();
 }
 
