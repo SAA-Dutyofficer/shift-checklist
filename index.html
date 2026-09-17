@@ -864,38 +864,37 @@ function renderQ(q) {
     mh += '</div></div>';
     return mh;
   }
-  // SBD machine check table
+  // SBD machine check table - one row per counter
   if (q.type==='sbd') {
     var sd = {};
     try { sd = v ? JSON.parse(v) : {}; } catch(e2){}
-    var tms = ['06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00'];
-    var mcs = [29,30,31,32,33];
-    var sh = '<div class="field"><div class="field-lbl">' + q.label + '</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr>';
-    sh += '<th style="padding:5px 6px;background:#F1F5F9;border:1px solid #E2E8F0;font-size:10px;text-align:left">Time</th>';
-    mcs.forEach(function(m){ sh += '<th style="padding:5px 6px;background:#F1F5F9;border:1px solid #E2E8F0;font-size:10px;text-align:center">C' + m + '</th>'; });
-    sh += '<th style="padding:5px 6px;background:#F1F5F9;border:1px solid #E2E8F0;font-size:10px;text-align:center">Done?</th></tr></thead><tbody>';
-    tms.forEach(function(t){
-      var rk = 'sbd_' + t.replace(':','');
-      var rd = sd[rk] || {};
-      sh += '<tr><td style="padding:4px 6px;border:1px solid #E2E8F0;font-weight:600;font-size:11px;white-space:nowrap">' + t + '</td>';
-      mcs.forEach(function(m){
-        var mk = 'm' + m;
-        var mv = rd[mk] || '';
-        var qid = q.id;
-        sh += '<td style="padding:3px;border:1px solid #E2E8F0;text-align:center">';
-        sh += '<span class="tog ' + (mv==='G'?'sbd-green':'') + '" style="font-size:10px;padding:2px 6px;margin:1px;cursor:pointer" onclick="togSBD(this,\'' + qid + '\',\'' + rk + '\',\'' + mk + '\',\'G\')">G</span>';
-        sh += '<span class="tog ' + (mv==='R'?'sbd-red':'') + '" style="font-size:10px;padding:2px 6px;margin:1px;cursor:pointer" onclick="togSBD(this,\'' + qid + '\',\'' + rk + '\',\'' + mk + '\',\'R\')">R</span>';
-        sh += '</td>';
-      });
-      var dv = rd['done'] || '';
-      sh += '<td style="padding:3px;border:1px solid #E2E8F0;text-align:center">';
-      sh += '<span class="tog ' + (dv==='Y'?'sel-yes':'') + '" style="font-size:10px;padding:2px 5px;margin:1px;cursor:pointer" onclick="togSBDdone(this,\'' + q.id + '\',\'' + rk + '\',\'Y\')">Y</span>';
-      sh += '<span class="tog ' + (dv==='N'?'sel-no':'') + '" style="font-size:10px;padding:2px 5px;margin:1px;cursor:pointer" onclick="togSBDdone(this,\'' + q.id + '\',\'' + rk + '\',\'N\')">N</span>';
+    var mcs2 = [29,30,31,32,33];
+    var qid2 = q.id;
+    var sh = '<div class="field"><div class="field-lbl">' + q.label + '</div>';
+    sh += '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>';
+    sh += '<th style="padding:6px 10px;background:#F1F5F9;border:1px solid #E2E8F0;text-align:left;font-size:11px">Counter</th>';
+    sh += '<th style="padding:6px 10px;background:#F1F5F9;border:1px solid #E2E8F0;text-align:center;font-size:11px">Status</th>';
+    sh += '<th style="padding:6px 10px;background:#F1F5F9;border:1px solid #E2E8F0;text-align:left;font-size:11px">Time found red</th>';
+    sh += '</tr></thead><tbody>';
+    mcs2.forEach(function(m){
+      var mk = 'm' + m;
+      var mVal = sd[mk] || '';
+      var tVal = sd[mk + '_time'] || '';
+      var isRed = mVal === 'R';
+      sh += '<tr>';
+      sh += '<td style="padding:6px 10px;border:1px solid #E2E8F0;font-weight:700">Counter ' + m + '</td>';
+      sh += '<td style="padding:6px 10px;border:1px solid #E2E8F0;text-align:center">';
+      sh += '<span class="tog ' + (mVal==='G'?'sbd-green':'') + '" style="font-size:12px;padding:4px 10px;margin:2px;cursor:pointer" onclick="togSBD(this,\'' + qid2 + '\',\'' + mk + '\',\'G\')">G</span>';
+      sh += '<span class="tog ' + (mVal==='R'?'sbd-red':'') + '" style="font-size:12px;padding:4px 10px;margin:2px;cursor:pointer" onclick="togSBD(this,\'' + qid2 + '\',\'' + mk + '\',\'R\')">R</span>';
+      sh += '</td>';
+      sh += '<td style="padding:4px 10px;border:1px solid #E2E8F0">';
+      sh += '<input type="text" placeholder="e.g. 14:30" value="' + tVal + '" style="border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:12px;width:120px;opacity:' + (isRed?'1':'0.35') + '" onchange="saveSBDtime(\'' + qid2 + '\',\'' + mk + '_time\',this.value)">';
       sh += '</td></tr>';
     });
-    sh += '</tbody></table></div></div>';
+    sh += '</tbody></table></div>';
     return sh;
   }
+
   return '';
 }
 
@@ -949,27 +948,25 @@ function togMulti(el, id, val) {
   formAnswers[id] = selected.join(',');
   autoDraft();
 }
-function togSBD(el, qid, rowKey, mKey, val) {
-  let sbdData = formAnswers[qid] ? JSON.parse(formAnswers[qid]) : {};
-  if (!sbdData[rowKey]) sbdData[rowKey] = {};
-  sbdData[rowKey][mKey] = sbdData[rowKey][mKey] === val ? '' : val;
+function togSBD(el, qid, mKey, val) {
+  var sbdData = {};
+  try { sbdData = formAnswers[qid] ? JSON.parse(formAnswers[qid]) : {}; } catch(e){}
+  sbdData[mKey] = sbdData[mKey] === val ? '' : val;
   formAnswers[qid] = JSON.stringify(sbdData);
-  // Update UI - find siblings in same cell
-  const cell = el.parentElement;
-  cell.querySelectorAll('.tog').forEach(t => {
-    t.classList.remove('sbd-green','sbd-red');
-  });
-  if (sbdData[rowKey][mKey]) el.classList.add(val === 'G' ? 'sbd-green' : 'sbd-red');
+  var cell = el.parentElement;
+  cell.querySelectorAll('.tog').forEach(function(t){ t.classList.remove('sbd-green','sbd-red'); });
+  if (sbdData[mKey]) el.classList.add(val === 'G' ? 'sbd-green' : 'sbd-red');
+  // Toggle time input opacity
+  var row = cell.parentElement;
+  var inp = row.querySelector('input[type="text"]');
+  if (inp) inp.style.opacity = (val === 'R' && sbdData[mKey] === 'R') ? '1' : '0.3';
   autoDraft();
 }
-function togSBDdone(el, qid, rowKey, val) {
-  let sbdData = formAnswers[qid] ? JSON.parse(formAnswers[qid]) : {};
-  if (!sbdData[rowKey]) sbdData[rowKey] = {};
-  sbdData[rowKey]['done'] = sbdData[rowKey]['done'] === val ? '' : val;
+function saveSBDtime(qid, key, val) {
+  var sbdData = {};
+  try { sbdData = formAnswers[qid] ? JSON.parse(formAnswers[qid]) : {}; } catch(e){}
+  sbdData[key] = val;
   formAnswers[qid] = JSON.stringify(sbdData);
-  const cell = el.parentElement;
-  cell.querySelectorAll('.tog').forEach(t => t.classList.remove('sel-yes','sel-no'));
-  if (sbdData[rowKey]['done']) el.classList.add(val === 'Y' ? 'sel-yes' : 'sel-no');
   autoDraft();
 }
 
@@ -1641,7 +1638,6 @@ async function renderQuestions(){
   allQuestions.sort((a,b)=>a.id<b.id?-1:1);
   document.getElementById('tab-questions').innerHTML=`<div class="a-sec">
     <div class="a-sec-title">Questions (${allQuestions.length})</div>
-    <button onclick="seedNewQuestions()" style="margin-bottom:12px;padding:8px 16px;background:#D97706;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">+ Add New SAS Questions to Firebase</button>
     <button onclick="reseedAll()" style="margin-bottom:12px;margin-left:8px;padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">&#9888; Reset &amp; Reseed ALL Questions</button>
     <button onclick="reseedAll()" style="margin-bottom:12px;margin-left:8px;padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">&#9888; Reset & Reseed ALL Questions</button>
     ${allQuestions.map(q=>`<div class="q-item">
