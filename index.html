@@ -1280,77 +1280,194 @@ async function genMonthlyReport(){
   if(!subs.length){prev.innerHTML=`<div class="empty">No submissions for ${mName} ${year}.</div>`;return;}
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,M=12,cW=W-M*2;let y=0;
-  function sc(s){return String(s||'').replace(/\u2013/g,'-').replace(/\u2014/g,'--').split('').map(function(ch){return ch.charCodeAt(0)>126?'?':ch;}).join('');}
+  const W=210,M=14,cW=W-M*2;let y=0;
+  // Safe char encoder
+  function sc(s){return String(s||'').replace(/–/g,'-').replace(/—/g,'--').split('').map(function(ch){return ch.charCodeAt(0)>126?'?':ch;}).join('');}
   function wtN(w){return{'Under 5 min':2.5,'5-10 min':7.5,'10-15 min':12.5,'15-20 min':17.5,'20+ min':25}[w]||0;}
   function pxN(p){return{'0-25 pax':12,'26-50 pax':38,'51-75 pax':63,'76-100 pax':88,'101-200 pax':150,'201-300 pax':250,'301-400 pax':350,'400+ pax':450}[p]||0;}
   function avg(a){return a.length?Math.round(a.reduce((x,b)=>x+b,0)/a.length*10)/10:0;}
-  function bar(lbls,vals,maxV,yy,bh,col){
-    // Label col = 44mm, value label = 10mm, bar area = remaining
-    const labelW = 44;
-    const valW = 12;
-    const barW = cW - labelW - valW; // bar area with room for value on right
-    lbls.forEach((l,i)=>{
-      const by=yy+i*(bh+3);
-      if(by>280)return;
-      // Row label
-      pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(70,70,85);
-      const ltext = sc(l).length > 24 ? sc(l).substring(0,24)+'...' : sc(l);
-      pdf.text(ltext, M+2, by+bh/2+1.5);
-      // Background bar
-      pdf.setFillColor(235,235,240);
-      pdf.rect(M+labelW, by, barW, bh, 'F');
-      // Filled bar -- cap at barW so it never overflows
-      const ratio = (maxV>0&&vals[i]>0) ? Math.min(vals[i]/maxV, 1) : 0;
-      const fw = ratio * barW;
-      pdf.setFillColor(...col);
-      pdf.rect(M+labelW, by, fw, bh, 'F');
-      // Value label -- always printed at fixed right position
-      pdf.setFontSize(6);pdf.setFont('helvetica','bold');pdf.setTextColor(50,50,65);
-      pdf.text(String(vals[i]), M+labelW+barW+2, by+bh/2+1.5);
-    });
-    return yy+lbls.length*(bh+3)+4;
-  }
-  function secHdr(t,col){
-    if(y>272){pdf.addPage();y=M;}
-    pdf.setFillColor(...col);pdf.rect(M,y,cW,7,'F');
-    pdf.setFillColor(col[0]-20,col[1]-20,col[2]-20);pdf.rect(M,y,2,7,'F');
-    pdf.setTextColor(255,255,255);pdf.setFontSize(8);pdf.setFont('helvetica','bold');
-    pdf.text(t.toUpperCase(),M+5,y+5);y+=10;
-  }
-  // Cover
-  pdf.setFillColor(10,10,18);pdf.rect(0,0,W,50,'F');
-  pdf.setFillColor(232,197,71);pdf.rect(0,0,4,50,'F');
-  pdf.setTextColor(232,197,71);pdf.setFontSize(16);pdf.setFont('helvetica','bold');
-  pdf.text('MONTHLY OPERATIONS REPORT',M+6,18);
-  pdf.setFontSize(11);pdf.setTextColor(200,196,188);pdf.text(mName.toUpperCase()+' '+year,M+6,28);
-  pdf.setFontSize(7.5);pdf.setFont('helvetica','normal');pdf.setTextColor(100,96,88);
-  pdf.text('Airport Operations  |  Shift Checklist System  |  Confidential',M+6,38);
-  y=58;
-  // Summary
+
+  // ── HEADER ──────────────────────────────────────────────────────────────────
+  pdf.setFillColor(10,12,22);pdf.rect(0,0,W,44,'F');
+  pdf.setFillColor(232,197,71);pdf.rect(0,0,3,44,'F');
+  pdf.setFillColor(26,111,212);pdf.rect(3,0,1.5,44,'F');
+  pdf.setTextColor(232,197,71);pdf.setFontSize(15);pdf.setFont('helvetica','bold');
+  pdf.text('MONTHLY OPERATIONS REPORT',M+4,16);
+  pdf.setFontSize(10);pdf.setTextColor(200,196,188);
+  pdf.text(mName.toUpperCase()+' '+year,M+4,26);
+  pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(90,88,80);
+  pdf.text('Sharjah Airport Authority  |  Airport Operations  |  Shift Checklist System  |  Confidential',M+4,36);
+  y=52;
+
+  // ── KPI SUMMARY BOXES ────────────────────────────────────────────────────────
   const stc={'Normal Operations':0,'Minor Issues':0,'Major Disruption':0,'Escalated':0};
   const shc={'Morning':0,'Afternoon':0,'Night':0};
+  let systemIssues=0,disruptions=0,escalations=0,policeOk=0,contractorOk=0,rampOk=0,sasPorterOk=0;
   subs.forEach(s=>{
     if(s.overallStatus in stc)stc[s.overallStatus]++;
     const sh=s.answers?.q2||'';
     if(sh.includes('Morning'))shc.Morning++;
     else if(sh.includes('Afternoon'))shc.Afternoon++;
     else if(sh.includes('Night'))shc.Night++;
+    if((s.answers?.q27||'').includes('No'))systemIssues++;
+    if((s.answers?.q33||'')==='Yes')disruptions++;
+    if((s.answers?.q34||'')==='Yes')escalations++;
+    if((s.answers?.q6||'')==='Yes')policeOk++;
+    if((s.answers?.q32||'')==='Yes')contractorOk++;
+    if((s.answers?.q31||'').includes('Stable'))rampOk++;
+    if((s.answers?.q29||'')==='Yes')sasPorterOk++;
   });
-  pdf.setFillColor(245,245,248);pdf.roundedRect(M,y,cW,18,1.5,1.5,'F');
-  pdf.setDrawColor(220,220,228);pdf.roundedRect(M,y,cW,18,1.5,1.5,'S');
-  const c4=cW/4;
-  [{l:'Total Shifts',v:subs.length},{l:'Normal',v:stc['Normal Operations']},{l:'Minor Issues',v:stc['Minor Issues']},{l:'Major/Escalated',v:stc['Major Disruption']+stc['Escalated']}].forEach((it,i)=>{
-    const cx=M+i*c4+c4/2;
-    pdf.setFontSize(6);pdf.setFont('helvetica','normal');pdf.setTextColor(140,140,150);pdf.text(it.l,cx,y+6,{align:'center'});
-    pdf.setFontSize(14);pdf.setFont('helvetica','bold');pdf.setTextColor(30,30,40);pdf.text(String(it.v),cx,y+15,{align:'center'});
+  const total=subs.length;
+  const normalRate=total>0?Math.round(stc['Normal Operations']/total*100):0;
+
+  // KPI boxes - row of 5
+  function kpiBox(x,bw,label,value,unit,ragColor){
+    pdf.setFillColor(246,247,250);pdf.rect(x,y,bw,20,'F');
+    pdf.setFillColor(...ragColor);pdf.rect(x,y,bw,2,'F');
+    pdf.setDrawColor(220,222,228);pdf.rect(x,y,bw,20,'S');
+    pdf.setFontSize(5.5);pdf.setFont('helvetica','normal');pdf.setTextColor(130,132,145);
+    pdf.text(sc(label),x+bw/2,y+7,{align:'center'});
+    pdf.setFontSize(13);pdf.setFont('helvetica','bold');pdf.setTextColor(20,22,35);
+    pdf.text(String(value),x+bw/2,y+15,{align:'center'});
+    if(unit){pdf.setFontSize(5);pdf.setFont('helvetica','normal');pdf.setTextColor(130,132,145);pdf.text(sc(unit),x+bw/2,y+19,{align:'center'});}
+  }
+  const ragG=[39,174,96],ragA=[230,126,34],ragR=[192,57,43],ragB=[40,100,190],ragN=[150,150,160];
+  const bw5=(cW-4)/5;
+  kpiBox(M,bw5,'Total Shifts',total,'',ragB);
+  kpiBox(M+bw5+1,bw5,'Normal Rate',normalRate+'%','of all shifts',normalRate>=90?ragG:normalRate>=75?ragA:ragR);
+  kpiBox(M+(bw5+1)*2,bw5,'Disruptions',disruptions,'shifts flagged',disruptions===0?ragG:disruptions<=2?ragA:ragR);
+  kpiBox(M+(bw5+1)*3,bw5,'System Issues',systemIssues,'FIDS/X-ray/IT',systemIssues===0?ragG:systemIssues<=3?ragA:ragR);
+  kpiBox(M+(bw5+1)*4,bw5,'Escalations',escalations,'to management',escalations===0?ragG:escalations<=1?ragA:ragR);
+  y+=26;
+
+  // ── OPERATIONAL NARRATIVE ────────────────────────────────────────────────────
+  pdf.setFillColor(248,249,252);pdf.rect(M,y,cW,24,'F');
+  pdf.setDrawColor(200,205,220);pdf.rect(M,y,cW,24,'S');
+  pdf.setFillColor(40,100,190);pdf.rect(M,y,2,24,'F');
+  pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(40,50,80);
+  pdf.text('OPERATIONAL SUMMARY',M+5,y+6);
+  pdf.setFont('helvetica','normal');pdf.setTextColor(60,65,85);pdf.setFontSize(6.5);
+  const pctNorm=total>0?Math.round(stc['Normal Operations']/total*100):0;
+  const pctRamp=total>0?Math.round(rampOk/total*100):0;
+  const pctPolice=total>0?Math.round(policeOk/total*100):0;
+  const pctCon=total>0?Math.round(contractorOk/total*100):0;
+  const line1=sc(mName+' '+year+': '+total+' shifts recorded across Morning ('+shc.Morning+'), Afternoon ('+shc.Afternoon+') and Night ('+shc.Night+') periods.');
+  const line2=sc('Operations ran normally in '+pctNorm+'% of shifts. Ramp stability confirmed in '+pctRamp+'% of shifts. Police presence adequate in '+pctPolice+'% of shifts.');
+  const line3=sc('Contractor compliance clear in '+pctCon+'% of shifts. '+disruptions+' shift(s) reported active disruptions; '+escalations+' required management escalation.');
+  const tlines=[line1,line2,line3];
+  tlines.forEach((l,i)=>{pdf.text(l,M+5,y+12+(i*4),{maxWidth:cW-10});});
+  y+=30;
+
+  // ── SHIFT STATUS ─────────────────────────────────────────────────────────────
+  function secHdr2(t,col){
+    if(y>272){pdf.addPage();y=M;}
+    pdf.setFillColor(...col);pdf.rect(M,y,cW,6.5,'F');
+    pdf.setFillColor(Math.max(col[0]-30,0),Math.max(col[1]-30,0),Math.max(col[2]-30,0));pdf.rect(M,y,2,6.5,'F');
+    pdf.setTextColor(255,255,255);pdf.setFontSize(7);pdf.setFont('helvetica','bold');
+    pdf.text(sc(t.toUpperCase()),M+5,y+4.5);y+=9;
+  }
+
+  // Compact 2-col layout for status + distribution
+  secHdr2('Shift Overview',[30,80,150]);
+  // Status table left, distribution right
+  const halfW=(cW-4)/2;
+  // Left: status breakdown as table
+  const statRows=[
+    {l:'Normal Operations',v:stc['Normal Operations'],c:ragG},
+    {l:'Minor Issues',v:stc['Minor Issues'],c:ragA},
+    {l:'Major Disruption',v:stc['Major Disruption'],c:ragR},
+    {l:'Escalated',v:stc['Escalated'],c:[41,128,185]}
+  ];
+  const ry=y;
+  pdf.setFontSize(6);pdf.setFont('helvetica','bold');pdf.setTextColor(100,105,120);
+  pdf.text('STATUS',M+2,y+4);pdf.text('COUNT',M+halfW-10,y+4);pdf.text('%',M+halfW-3,y+4);
+  y+=6;
+  statRows.forEach((r,i)=>{
+    const rowY=y+i*7;
+    if(i%2===0){pdf.setFillColor(247,248,251);pdf.rect(M,rowY,halfW,7,'F');}
+    pdf.setFillColor(...r.c);pdf.rect(M,rowY,2,7,'F');
+    pdf.setFont('helvetica','normal');pdf.setTextColor(50,55,70);pdf.setFontSize(6.5);
+    pdf.text(sc(r.l),M+4,rowY+5);
+    pdf.setFont('helvetica','bold');
+    pdf.text(String(r.v),M+halfW-12,rowY+5,{align:'right'});
+    const pct2=total>0?Math.round(r.v/total*100):0;
+    pdf.setTextColor(...r.c);
+    pdf.text(pct2+'%',M+halfW-1,rowY+5,{align:'right'});
   });
-  y+=24;
-  secHdr('Shift Status Breakdown',[40,100,160]);
-  y=bar(['Normal Operations','Minor Issues','Major Disruption','Escalated'],[stc['Normal Operations'],stc['Minor Issues'],stc['Major Disruption'],stc['Escalated']],subs.length,y,7,[39,174,96]);
-  secHdr('Shift Distribution',[60,60,100]);
-  y=bar(['Morning','Afternoon','Night'],[shc.Morning,shc.Afternoon,shc.Night],Math.max(...Object.values(shc),1),y,7,[100,100,200]);
-  // PAX Flow
+  // Right: distribution
+  const rxBase=M+halfW+4;
+  const rx=y-6;
+  pdf.setFontSize(6);pdf.setFont('helvetica','bold');pdf.setTextColor(100,105,120);
+  pdf.text('SHIFT',rxBase+2,rx+4);pdf.text('COUNT',rxBase+halfW-10,rx+4);pdf.text('%',rxBase+halfW-3,rx+4);
+  const distRows=[
+    {l:'Morning (06:00-14:00)',v:shc.Morning},
+    {l:'Afternoon (14:00-22:00)',v:shc.Afternoon},
+    {l:'Night (22:00-06:00)',v:shc.Night}
+  ];
+  distRows.forEach((r,i)=>{
+    const rowY=rx+6+i*7;
+    if(i%2===0){pdf.setFillColor(247,248,251);pdf.rect(rxBase,rowY,halfW,7,'F');}
+    pdf.setFillColor(40,100,190);pdf.rect(rxBase,rowY,2,7,'F');
+    pdf.setFont('helvetica','normal');pdf.setTextColor(50,55,70);pdf.setFontSize(6.5);
+    pdf.text(sc(r.l),rxBase+4,rowY+5);
+    pdf.setFont('helvetica','bold');pdf.setTextColor(50,55,70);
+    pdf.text(String(r.v),rxBase+halfW-12,rowY+5,{align:'right'});
+    const pct3=total>0?Math.round(r.v/total*100):0;
+    pdf.setTextColor(40,100,190);
+    pdf.text(pct3+'%',rxBase+halfW-1,rowY+5,{align:'right'});
+  });
+  y+=32;
+
+  // ── OPS COMPLIANCE TABLE ─────────────────────────────────────────────────────
+  if(y>245){pdf.addPage();y=M;}else y+=4;
+  secHdr2('Operational Compliance Indicators',[40,60,100]);
+  const compRows=[
+    {l:'Normal Operations',v:stc['Normal Operations'],total:total,thresh:90,unit:'% shifts'},
+    {l:'Ramp / Cargo Stable',v:rampOk,total:total,thresh:95,unit:'% shifts'},
+    {l:'Police Presence Adequate',v:policeOk,total:total,thresh:90,unit:'% shifts'},
+    {l:'Contractor Compliance Clear',v:contractorOk,total:total,thresh:90,unit:'% shifts'},
+    {l:'SAS Porter Coverage',v:sasPorterOk,total:total,thresh:85,unit:'% shifts'},
+    {l:'System Issues Raised',v:systemIssues,total:total,thresh:0,unit:'shifts (lower=better)',inverse:true},
+    {l:'Active Disruptions Reported',v:disruptions,total:total,thresh:0,unit:'shifts (lower=better)',inverse:true},
+    {l:'Management Escalations',v:escalations,total:total,thresh:0,unit:'shifts (lower=better)',inverse:true},
+  ];
+  // Header
+  pdf.setFontSize(6);pdf.setFont('helvetica','bold');pdf.setTextColor(100,105,120);
+  pdf.text('INDICATOR',M+2,y+4);
+  pdf.text('COUNT',M+cW*0.52,y+4,{align:'right'});
+  pdf.text('RATE',M+cW*0.65,y+4,{align:'right'});
+  pdf.text('STATUS',M+cW*0.83,y+4,{align:'right'});
+  y+=6;
+  compRows.forEach((r,i)=>{
+    const rY=y+i*7;
+    if(i%2===0){pdf.setFillColor(247,248,251);pdf.rect(M,rY,cW,7,'F');}
+    const pct4=r.total>0?Math.round(r.v/r.total*100):0;
+    let rag,ragLbl;
+    if(r.inverse){
+      rag=r.v===0?ragG:r.v<=2?ragA:ragR;
+      ragLbl=r.v===0?'GOOD':r.v<=2?'MONITOR':'REVIEW';
+    } else {
+      rag=pct4>=r.thresh?ragG:pct4>=(r.thresh-15)?ragA:ragR;
+      ragLbl=pct4>=r.thresh?'GOOD':pct4>=(r.thresh-15)?'MONITOR':'REVIEW';
+    }
+    pdf.setFillColor(...rag);pdf.rect(M,rY,2,7,'F');
+    pdf.setFont('helvetica','normal');pdf.setTextColor(50,55,70);pdf.setFontSize(6.5);
+    pdf.text(sc(r.l),M+4,rY+5);
+    pdf.setFont('helvetica','bold');pdf.setTextColor(50,55,70);
+    pdf.text(String(r.v)+'/'+r.total,M+cW*0.52,rY+5,{align:'right'});
+    pdf.setTextColor(40,60,100);
+    pdf.text(r.inverse?String(r.v)+' shifts':pct4+'%',M+cW*0.65,rY+5,{align:'right'});
+    // RAG badge
+    const badgeW=14;const badgeX=M+cW-badgeW;
+    pdf.setFillColor(...rag);pdf.roundedRect(badgeX,rY+1.5,badgeW,4,1,1,'F');
+    pdf.setFontSize(5);pdf.setFont('helvetica','bold');pdf.setTextColor(255,255,255);
+    pdf.text(ragLbl,badgeX+badgeW/2,rY+4.5,{align:'center'});
+  });
+  y+=compRows.length*7+6;
+
+  // ── PASSENGER FLOW TABLE ─────────────────────────────────────────────────────
+  if(y>230){pdf.addPage();y=M;}else y+=4;
+  secHdr2('Passenger Flow -- Monthly Averages',[39,120,96]);
   const areas=[
     {l:'Zone A',wq:'q8Ab',pq:'q8Ac',cq:'q8Aa'},
     {l:'Zone B',wq:'q8Bb',pq:'q8Bc',cq:'q8Ba'},
@@ -1366,57 +1483,105 @@ async function genMonthlyReport(){
   const aWT=areas.map(a=>avg(subs.map(s=>wtN(s.answers?.[a.wq])).filter(v=>v>0)));
   const aPX=areas.map(a=>avg(subs.map(s=>pxN(s.answers?.[a.pq])).filter(v=>v>0)));
   const aCT=areas.map(a=>avg(subs.map(s=>parseInt(s.answers?.[a.cq])||0).filter(v=>v>0)));
-  if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow -- Avg Waiting Time (min)',[39,120,96]);
-  y=bar(areas.map(a=>a.l),aWT,25,y,8,[230,126,34]);
-  if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow -- Avg PAX Volume',[80,60,160]);
-  y=bar(areas.map(a=>a.l),aPX,500,y,8,[85,136,238]);
-  if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Passenger Flow -- Avg Desks/Counters',[60,100,80]);
-  y=bar(areas.map(a=>a.l),aCT,100,y,8,[76,175,130]);
-  // Gates
-  const gates=[{l:'G6-26',wq:'q16a',pq:'q16p',xq:'q16'},{l:'G1-3',wq:'q18a',pq:'q18p',xq:'q19'},{l:'G4-5',wq:'q21a',pq:'q21p',xq:'q22'}];
+  // Table header
+  pdf.setFontSize(6);pdf.setFont('helvetica','bold');pdf.setTextColor(100,105,120);
+  pdf.setFillColor(235,237,245);pdf.rect(M,y,cW,5.5,'F');
+  pdf.text('AREA',M+2,y+4);
+  pdf.text('AVG WAIT (MIN)',M+cW*0.4,y+4,{align:'right'});
+  pdf.text('STATUS',M+cW*0.57,y+4,{align:'right'});
+  pdf.text('AVG PAX VOL',M+cW*0.75,y+4,{align:'right'});
+  pdf.text('AVG DESKS',M+cW,y+4,{align:'right'});
+  y+=6;
+  areas.forEach((a,i)=>{
+    const rY=y+i*6.5;
+    if(i%2===0){pdf.setFillColor(248,249,252);pdf.rect(M,rY,cW,6.5,'F');}
+    const wt=aWT[i];
+    const wtRag=wt===0?ragN:wt<5?ragG:wt<10?ragA:ragR;
+    const wtLbl=wt===0?'--':wt<5?'GOOD':wt<10?'MODERATE':'HIGH';
+    pdf.setFillColor(...wtRag);pdf.rect(M,rY,2,6.5,'F');
+    pdf.setFont('helvetica','normal');pdf.setTextColor(50,55,70);pdf.setFontSize(6.5);
+    pdf.text(sc(a.l),M+4,rY+4.5);
+    pdf.setFont('helvetica','bold');
+    pdf.text(wt>0?String(wt)+'m':'--',M+cW*0.4,rY+4.5,{align:'right'});
+    // RAG badge
+    if(wt>0){
+      const bx=M+cW*0.42;const bw2=12;
+      pdf.setFillColor(...wtRag);pdf.roundedRect(bx,rY+1,bw2,4,1,1,'F');
+      pdf.setFontSize(4.5);pdf.setTextColor(255,255,255);
+      pdf.text(wtLbl,bx+bw2/2,rY+4,{align:'center'});
+    }
+    pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(50,55,70);
+    pdf.text(aPX[i]>0?String(aPX[i]):'--',M+cW*0.75,rY+4.5,{align:'right'});
+    pdf.text(aCT[i]>0?String(aCT[i]):'--',M+cW,rY+4.5,{align:'right'});
+  });
+  y+=areas.length*6.5+4;
+
+  // ── GATE SCREENING TABLE ─────────────────────────────────────────────────────
+  if(y>245){pdf.addPage();y=M;}else y+=4;
+  secHdr2('Gate Screening -- Monthly Averages',[140,80,30]);
+  const gates=[{l:'Gates 6-26',wq:'q16a',pq:'q16p',xq:'q16'},{l:'Gates 1-3',wq:'q18a',pq:'q18p',xq:'q19'},{l:'Gates 4-5',wq:'q21a',pq:'q21p',xq:'q22'}];
   const gWT=gates.map(g=>avg(subs.map(s=>wtN(s.answers?.[g.wq])).filter(v=>v>0)));
   const gPX=gates.map(g=>avg(subs.map(s=>pxN(s.answers?.[g.pq])).filter(v=>v>0)));
   const gXR=gates.map(g=>avg(subs.map(s=>parseInt(s.answers?.[g.xq])||0).filter(v=>v>0)));
-  if(y>200){pdf.addPage();y=M;}else y+=6;
-  secHdr('Gate Screening -- Avg Waiting Time (min)',[160,100,30]);
-  y=bar(gates.map(g=>g.l),gWT,25,y,8,[230,126,34]);
-  if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Gate Screening -- Avg X-Rays in Operation',[120,60,30]);
-  y=bar(gates.map(g=>g.l),gXR,5,y,8,[232,197,71]);
-  if(y>200){pdf.addPage();y=M;}else y+=4;
-  secHdr('Gate Screening -- Avg PAX Volume',[80,40,120]);
-  y=bar(gates.map(g=>g.l),gPX,500,y,8,[85,136,238]);
-  // Submissions list
-  if(y>220){pdf.addPage();y=M;}else y+=6;
-  secHdr('Submissions -- '+mName+' '+year,[40,40,60]);
-  pdf.setFontSize(6.5);pdf.setFont('helvetica','bold');pdf.setTextColor(100,100,110);
-  pdf.text('Date',M+2,y);pdf.text('Shift',M+30,y);pdf.text('Officer',M+60,y);pdf.text('Status',M+105,y);y+=5;
-  subs.forEach(s=>{
-    if(y>284){pdf.addPage();y=M;}
-    const d=new Date(s.submittedAt);
-    pdf.setDrawColor(232,232,238);pdf.line(M,y,M+cW,y);
-    pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(60,60,75);
-    pdf.text(sc(d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})),M+2,y+4);
-    pdf.text(sc((s.answers?.q2||'').substring(0,18)),M+30,y+4);
-    pdf.text(sc(s.staffName||'--'),M+60,y+4);
-    const vc={'Normal Operations':[39,174,96],'Minor Issues':[230,126,34],'Major Disruption':[192,57,43],'Escalated':[41,128,185]}[s.overallStatus]||[100,100,110];
-    pdf.setTextColor(...vc);pdf.setFont('helvetica','bold');
-    pdf.text(sc(s.overallStatus||'--'),M+105,y+4);
-    y+=7;
+  // MOU compliance
+  const mouA=subs.filter(s=>(s.answers?.q15||'')==='Yes').length;
+  const mouB=subs.filter(s=>(s.answers?.q15b||'')==='Yes').length;
+  // Table header
+  pdf.setFillColor(235,237,245);pdf.rect(M,y,cW,5.5,'F');
+  pdf.setFontSize(6);pdf.setFont('helvetica','bold');pdf.setTextColor(100,105,120);
+  pdf.text('GATE AREA',M+2,y+4);
+  pdf.text('AVG WAIT',M+cW*0.38,y+4,{align:'right'});
+  pdf.text('STATUS',M+cW*0.55,y+4,{align:'right'});
+  pdf.text('AVG X-RAYS',M+cW*0.75,y+4,{align:'right'});
+  pdf.text('AVG PAX VOL',M+cW,y+4,{align:'right'});
+  y+=6;
+  gates.forEach((g,i)=>{
+    const rY=y+i*6.5;
+    if(i%2===0){pdf.setFillColor(248,249,252);pdf.rect(M,rY,cW,6.5,'F');}
+    const wt=gWT[i];
+    const wtRag=wt===0?ragN:wt<5?ragG:wt<10?ragA:ragR;
+    const wtLbl=wt===0?'--':wt<5?'GOOD':wt<10?'MODERATE':'HIGH';
+    pdf.setFillColor(...wtRag);pdf.rect(M,rY,2,6.5,'F');
+    pdf.setFont('helvetica','normal');pdf.setTextColor(50,55,70);pdf.setFontSize(6.5);
+    pdf.text(sc(g.l),M+4,rY+4.5);
+    pdf.setFont('helvetica','bold');
+    pdf.text(wt>0?String(wt)+'m':'--',M+cW*0.38,rY+4.5,{align:'right'});
+    if(wt>0){
+      const bx=M+cW*0.4;const bw3=12;
+      pdf.setFillColor(...wtRag);pdf.roundedRect(bx,rY+1,bw3,4,1,1,'F');
+      pdf.setFontSize(4.5);pdf.setTextColor(255,255,255);
+      pdf.text(wtLbl,bx+bw3/2,rY+4,{align:'center'});
+    }
+    pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(50,55,70);
+    pdf.text(gXR[i]>0?String(gXR[i]):'--',M+cW*0.75,rY+4.5,{align:'right'});
+    pdf.text(gPX[i]>0?String(gPX[i]):'--',M+cW,rY+4.5,{align:'right'});
   });
+  y+=gates.length*6.5+6;
+
+  // MOU compliance row
+  pdf.setFillColor(240,244,255);pdf.rect(M,y,cW,12,'F');
+  pdf.setDrawColor(180,200,230);pdf.rect(M,y,cW,12,'S');
+  pdf.setFillColor(40,100,190);pdf.rect(M,y,2,12,'F');
+  pdf.setFontSize(6.5);pdf.setFont('helvetica','bold');pdf.setTextColor(40,60,110);
+  pdf.text('MOU Compliance',M+5,y+5);
+  pdf.setFont('helvetica','normal');pdf.setTextColor(60,65,85);
+  const mou75pct=total>0?Math.round(mouA/total*100):0;
+  const mou100pct=total>0?Math.round(mouB/total*100):0;
+  pdf.text(sc('Police staffing at 75% (MOU S.7): '+mouA+'/'+total+' shifts ('+mou75pct+'%)     |     Peak staffing at 100%: '+mouB+'/'+total+' shifts ('+mou100pct+'%)'),M+5,y+10,{maxWidth:cW-10});
+  y+=18;
+
+  // ── FOOTER ──────────────────────────────────────────────────────────────────
   const tp=pdf.internal.getNumberOfPages();
   for(let p=1;p<=tp;p++){
     pdf.setPage(p);
-    pdf.setFillColor(232,197,71);pdf.rect(0,294,W,0.8,'F');
-    pdf.setFontSize(6);pdf.setFont('helvetica','normal');pdf.setTextColor(160,160,170);
-    pdf.text('Airport Operations  |  '+mName+' '+year+'  |  Confidential',M,298);
-    pdf.text('Page '+p+'/'+tp,W-M,298,{align:'right'});
+    pdf.setFillColor(10,12,22);pdf.rect(0,291,W,6,'F');
+    pdf.setFillColor(232,197,71);pdf.rect(0,291,W,0.8,'F');
+    pdf.setFontSize(5.5);pdf.setFont('helvetica','normal');pdf.setTextColor(140,140,150);
+    pdf.text(sc('Sharjah Airport Authority  |  Airport Operations  |  '+mName+' '+year+'  |  Confidential'),M,296);
+    pdf.text('Page '+p+' of '+tp,W-M,296,{align:'right'});
   }
-  pdf.save('Monthly-Report-'+mName+'-'+year+'.pdf');
-  prev.innerHTML=`<div class="empty" style="color:var(--green)"> Report for ${mName} ${year} downloaded -- ${subs.length} shifts included.</div>`;
+  pdf.save(sc('Monthly-Report-'+mName+'-'+year+'.pdf'));
+  prev.innerHTML=`<div class="empty" style="color:var(--green)"> Monthly report for ${mName} ${year} downloaded -- ${subs.length} shifts included.</div>`;
 }
 
 // 
